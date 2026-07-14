@@ -23,5 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "stay desk"
-include(":app_admin")
+include(":admin_app")
  

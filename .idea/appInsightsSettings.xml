@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="stay.desk.pms" />
+                  <option name="mobileSdkAppId" value="1:584834232463:android:a37b8b72de454113cbc0fa" />
+                  <option name="projectId" value="stay-desk-pms" />
+                  <option name="projectNumber" value="584834232463" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

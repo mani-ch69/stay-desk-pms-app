@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "160367544031",
+    "project_id": "stay-desk-pms-app",
+    "storage_bucket": "stay-desk-pms-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:160367544031:android:898362f5eb2aa71ed30b6a",
+        "android_client_info": {
+          "package_name": "Stay.deskpmsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9sg9lUjnG8ECyvmOnrYYt3yLyn6y3WeA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

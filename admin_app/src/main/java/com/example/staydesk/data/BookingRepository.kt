@@ -1,0 +1,78 @@
+package com.example.staydesk.data
+
+import com.example.staydesk.data.model.Booking
+import com.example.staydesk.data.model.BookingStatus
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+object BookingRepository {
+    private val rootDb by lazy { com.google.firebase.database.FirebaseDatabase.getInstance().getReference("bookings") }
+    private var db = rootDb
+    private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
+    val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
+    private var listener: ValueEventListener? = null
+
+    fun startListening(hotelId: String) {
+        stopListening()
+        db = FirebaseDatabase.getInstance().getReference("hotels").child(hotelId).child("bookings")
+        // Optimization: Enable offline persistence for faster subsequent loads
+        db.keepSynced(true)
+        
+        listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Optimization: Efficient mapping using sequence for large datasets
+                val list = snapshot.children.asSequence()
+                    .mapNotNull { it.getValue(Booking::class.java) }
+                    .toList()
+                _bookings.value = list
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        db.addValueEventListener(listener!!)
+    }
+
+    private fun stopListening() {
+        listener?.let { db.removeEventListener(it) }
+        listener = null
+    }
+
+    fun addBooking(booking: Booking) {
+        if (booking.id.isEmpty()) return
+        
+        // Generate a 10-digit booking number if not already present
+        val finalBooking = if (booking.bookingNumber.isEmpty()) {
+            val randomNum = (1_000_000_000L..9_999_999_999L).random()
+            booking.copy(bookingNumber = randomNum.toString())
+        } else {
+            booking
+        }
+        
+        db.child(finalBooking.id).setValue(finalBooking)
+    }
+
+    fun updateBookingStatus(id: String, status: BookingStatus) {
+        db.child(id).child("status").setValue(status)
+    }
+
+    fun checkInGuest(bookingId: String, idPhotoUrl: String) {
+        val updates = mapOf(
+            "status" to BookingStatus.CHECKED_IN,
+            "guestIdentities/0/frontPhotoUrl" to idPhotoUrl
+        )
+        db.child(bookingId).updateChildren(updates)
+    }
+
+    fun deleteBooking(id: String) {
+        db.child(id).removeValue()
+    }
+
+    fun clearData() {
+        stopListening()
+        _bookings.value = emptyList()
+    }
+}
