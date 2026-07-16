@@ -100,7 +100,7 @@ fun AdminDashboardContent(
                     )
                     DashboardMetricCard(
                         title = "Today's Check-outs",
-                        value = "3", // Placeholder
+                        value = bookings.count { it.status == com.example.staydesk.data.model.BookingStatus.CHECKED_IN && it.checkOutDate in today.timeInMillis until (today.timeInMillis + 86400000) }.toString(),
                         icon = Icons.Default.ArrowCircleRight,
                         iconColor = Color(0xFFF57C00),
                         onClick = {},
@@ -128,38 +128,35 @@ fun AdminDashboardContent(
             }
         }
 
-        // 3. Today's Overview (Financial)
+        // 3. Today's Overview (Financial) - Linked to live data
         item {
+            val todayStart = today.apply { 
+                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0)
+            }.timeInMillis
+            val todayBookings = bookings.filter { it.timestamp in todayStart..(todayStart + 86400000) }
+            val totalRevenue = todayBookings.sumOf { it.totalAmount.toDouble() }
+
             Column {
                 DashboardSectionHeader(title = "Today's Overview")
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     DashboardOverviewCard(
                         title = "Today's Revenue",
-                        value = "₹ 12,450",
-                        subtitle = "15% vs yesterday",
+                        value = "₹ ${String.format("%.0f", totalRevenue)}",
+                        subtitle = "${todayBookings.size} New Bookings",
                         icon = Icons.Default.AccountBalanceWallet,
                         iconColor = Color(0xFF673AB7),
-                        trend = "↗ 15% vs yesterday",
+                        trend = "↗ Live from DB",
                         modifier = Modifier.weight(1.5f)
                     )
                     DashboardOverviewCard(
-                        title = "Advance",
-                        value = "₹ 7,000",
-                        subtitle = "3 Bookings",
-                        icon = Icons.Default.CardGiftcard,
+                        title = "Active Guests",
+                        value = stats.activeStays.toString(),
+                        subtitle = "Currently In",
+                        icon = Icons.Default.Groups,
                         iconColor = Color(0xFF4CAF50),
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                DashboardOverviewCard(
-                    title = "Pending Payment",
-                    value = "₹ 5,450",
-                    subtitle = "5 Bookings",
-                    icon = Icons.Default.History,
-                    iconColor = Color(0xFFF57C00),
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
 
@@ -198,8 +195,14 @@ fun AdminDashboardContent(
             }
         }
 
-        // 6. Today's Timeline
+        // 6. Today's Timeline - Linked to live bookings
         item {
+            val todayStart = today.apply { set(Calendar.HOUR_OF_DAY, 0) }.timeInMillis
+            val timelineBookings = bookings.filter { 
+                it.checkInDate in todayStart..(todayStart + 86400000) || 
+                it.checkOutDate in todayStart..(todayStart + 86400000)
+            }.sortedBy { it.checkInDate }
+
             Column {
                 DashboardSectionHeader(title = "Today's Timeline", actionText = "View Calendar", onActionClick = {})
                 Surface(
@@ -209,10 +212,21 @@ fun AdminDashboardContent(
                     shadowElevation = 1.dp
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        TimelineItem("11:00 AM", "Check-out", "Room 101", Color(0xFF4CAF50))
-                        TimelineItem("12:00 PM", "Room Cleaning", "Room 101", Color(0xFFF57C00))
-                        TimelineItem("01:00 PM", "Check-in", "Room 103", Color(0xFF0052FF))
-                        TimelineItem("02:00 PM", "Check-in", "Room 104", Color(0xFF673AB7), isLast = true)
+                        if (timelineBookings.isEmpty()) {
+                            Text("No activities scheduled for today", color = Color.Gray, fontSize = 12.sp)
+                        } else {
+                            timelineBookings.take(4).forEachIndexed { index, b ->
+                                val timeStr = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(b.checkInDate))
+                                val type = if (b.status == com.example.staydesk.data.model.BookingStatus.CHECKED_IN) "Check-out" else "Check-in"
+                                TimelineItem(
+                                    time = timeStr,
+                                    title = type,
+                                    subtitle = b.guestName,
+                                    color = if (type == "Check-in") Color(0xFF0052FF) else Color(0xFF4CAF50),
+                                    isLast = index == (timelineBookings.size.coerceAtMost(4) - 1)
+                                )
+                            }
+                        }
                     }
                 }
             }

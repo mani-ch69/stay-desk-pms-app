@@ -524,47 +524,53 @@ function renderTimelineCalendar() {
         </div>
     `).join('');
 
-    // 4. Render Rows (Rooms/Beds)
-    const mockBookings = [
-        { guest: "James Wilson", start: 3, len: 4, color: "red" },
-        { guest: "Sam Black", start: 17, len: 8, color: "yellow", star: true },
-        { guest: "Danielle", start: 7, len: 4, color: "yellow" },
-        { guest: "Ava Brown", start: 10, len: 12, color: "yellow" },
-        { guest: "Liam Johnson", start: 11, len: 5, color: "yellow" },
-        { guest: "Sam Black", start: 0, len: 7, color: "green" },
-        { guest: "Nadia F", start: 12, len: 3, color: "yellow" },
-        { guest: "Oliver Taylor", start: 11, len: 10, color: "yellow" },
-        { guest: "Lee Piper", start: 6, len: 6, color: "yellow" },
-        { guest: "Sophia Miller", start: 9, len: 7, color: "red", star: true },
-        { guest: "Amelia Harris", start: 3, len: 5, color: "red" }
-    ];
+    // 4. Render Rows (Rooms)
+    db.ref(`hotels/${hotelId}/bookings`).get().then(snap => {
+        const liveBookings = [];
+        snap.forEach(c => liveBookings.push(c.val()));
 
-    contentContainer.innerHTML = allRooms.map((room, idx) => {
-        const bookings = mockBookings.filter((_, i) => (i % allRooms.length) === idx);
+        contentContainer.innerHTML = allRooms.map((room, idx) => {
+            // Filter bookings for this room category
+            const roomBookings = liveBookings.filter(b => b.roomNumber === room.roomType);
 
-        return `
-            <div class="timeline-row">
-                <div class="timeline-room-sidebar">
-                    <div class="room-name">${room.roomType} ${idx+1}</div>
-                    <div class="room-desc">${room.roomType}; ${room.roomType} with B...</div>
-                </div>
-
-                <!-- Grid Background -->
-                <div class="timeline-grid-bg">
-                    ${dates.map(d => `<div class="grid-line ${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>`).join('')}
-                </div>
-
-                <!-- Booking Bars -->
-                ${bookings.map(b => `
-                    <div class="booking-bar bar-${b.color}" style="left: ${240 + (b.start * 40)}px; width: ${b.len * 40 - 4}px;">
-                        <div class="bar-content">
-                            ${b.star ? '<span class="icon-star">★</span>' : ''}
-                            <span class="icon-user">👤 1</span>
-                            <span>${b.guest}</span>
-                        </div>
+            return `
+                <div class="timeline-row">
+                    <div class="timeline-room-sidebar">
+                        <div class="room-name">${room.roomType}</div>
+                        <div class="room-desc">${room.totalUnits} Units Available</div>
                     </div>
-                `).join('')}
-            </div>
-        `;
-    }).join('');
+
+                    <!-- Grid Background -->
+                    <div class="timeline-grid-bg">
+                        ${dates.map(d => `<div class="grid-line ${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>`).join('')}
+                    </div>
+
+                    <!-- Booking Bars (Live Data) -->
+                    ${roomBookings.map(b => {
+                        const bStart = new Date(b.checkInDate);
+                        const bEnd = new Date(b.checkOutDate);
+
+                        // Calculate offset from current calendar start
+                        const dayDiff = Math.floor((bStart - dates[0]) / (1000 * 60 * 60 * 24));
+                        const duration = Math.ceil((bEnd - bStart) / (1000 * 60 * 60 * 24));
+
+                        // Only show if within visible range
+                        if (dayDiff + duration < 0 || dayDiff > 31) return "";
+
+                        const leftPos = 240 + (dayDiff * 40);
+                        const widthSize = (duration * 40) - 4;
+
+                        return `
+                            <div class="booking-bar bar-blue" style="left: ${leftPos}px; width: ${widthSize}px;">
+                                <div class="bar-content">
+                                    <span class="icon-user">👤</span>
+                                    <span>${b.guestName}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }).join('');
+    });
 }
