@@ -1,20 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- New Bed/Sleeping Icon - Centered for adaptive masks -->
-    <group
-        android:translateX="18"
-        android:translateY="20"
-        android:scaleX="0.14"
-        android:scaleY="0.14">
+    <!-- Background Circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
 
-        <path
-            android:fillColor="#C5A059"
-            android:pathData="M31.3,31.3h468.7v449.2h-468.7z M49.5,49.5v322.3l44.4,-0.2v39.5c0,13.1 10.6,23.7 23.7,23.7s23.7,-10.6 23.7,-23.7v-39.5h311.1v39.5c0,13.1 10.6,23.7 23.7,23.7s23.7,-10.6 23.7,-23.7v-143.5c0,-43.6 -35.4,-79.1 -79.1,-79.1H221.7v-23.7h11.8c13.1,0 23.7,-10.6 23.7,-23.7v-63.2c0,-13.1 -10.6,-23.7 -23.7,-23.7h-47.4c-13.1,0 -23.7,10.6 -23.7,23.7v63.2c0,13.1 10.6,23.7 23.7,23.7h11.8v23.7h-67v-35.4l44.4,-0.2v-274.6L49.5,49.5z M141.5,145.4c0,-26.1 -21.1,-47.4 -47.4,-47.4s-47.4,21.3 -47.4,47.4s21.1,47.4,47.4,47.4S141.5,171.6,141.5,145.4z" />
-    </group>
+    <!-- Main Building/Hotel Icon (Blue) -->
+    <path
+        android:fillColor="#0052FF"
+        android:pathData="M34,74 L34,44 L54,34 L74,44 L74,74 L64,74 L64,54 L44,54 L44,74 Z" />
+
+    <!-- Roof Detail -->
+    <path
+        android:fillColor="#0039CC"
+        android:pathData="M34,44 L54,34 L74,44 L54,39 Z" />
+
+    <!-- Window/Stay Desk Indicator -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,46 L58,46 L58,50 L50,50 Z" />
 
 </vector>

@@ -48,15 +48,14 @@ fun AdminNavigation() {
 
     // Initialize session if already logged in
     LaunchedEffect(Unit) {
+        // ALWAYS INITIALIZE A SESSION FOR DEBUGGING
+        val debugHotelId = "GangaHomes_001" 
+        com.example.staydesk.data.HotelSession.setHotelId(debugHotelId)
+        
         if (securityManager.isLoggedIn()) {
             val hId = securityManager.getHotelId()
             if (hId != null) {
                 com.example.staydesk.data.HotelSession.setHotelId(hId)
-            } else {
-                val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
-                if (uid != null) {
-                    com.example.staydesk.data.HotelSession.setHotelId(uid)
-                }
             }
         }
     }
@@ -99,14 +98,8 @@ fun AdminNavigation() {
         composable("splash") {
             SplashScreen(
                 onAnimationFinished = {
-                    val next = when {
-                        !securityManager.isLoggedIn() -> "login"
-                        // Add check for hotel setup completion here later
-                        !securityManager.hasSeenSecuritySetup() -> "security_setup"
-                        securityManager.isLockEnabled() -> "unlock"
-                        else -> "admin_menu"
-                    }
-                    navController.navigate(next) {
+                    // SKIP LOGIN FOR NOW
+                    navController.navigate("admin_menu") {
                         popUpTo("splash") { inclusive = true }
                     }
                 }

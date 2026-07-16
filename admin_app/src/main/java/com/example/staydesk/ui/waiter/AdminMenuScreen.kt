@@ -86,12 +86,12 @@ fun AdminMenuScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Open Drawer */ }) {
-                        Icon(Icons.Default.Menu, null, tint = Color.Black)
-                    }
+                    // Hamburger icon removed
                 },
                 actions = {
-                    IconButton(onClick = { /* Search */ }) { Icon(Icons.Default.Search, null, tint = Color.Black) }
+                    IconButton(onClick = { selectedBottomTab = "settings"; moreTabSubScreen = "main" }) { 
+                        Icon(Icons.Default.AccountCircle, null, tint = Color.Black) 
+                    }
                     IconButton(onClick = { /* Notifications */ }) { Icon(Icons.Default.Notifications, null, tint = Color.Black) }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)

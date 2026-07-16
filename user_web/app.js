@@ -180,11 +180,9 @@ document.getElementById('btn-confirm-booking').onclick = () => {
         guestPhone: phone,
         checkInDate: new Date(checkIn).getTime(),
         checkOutDate: new Date(checkOut).getTime(),
-        totalAmount: parseFloat(selectedRoomForBooking.roomPrice || 2500),
-        advancePaid: 0,
-        numberOfGuests: selectedRoomForBooking.maxGuests,
-        status: "BOOKED",
-        bookingAgent: "Website Visitor",
+        totalAmount: parseFloat(selectedRoomForBooking.price || selectedRoomForBooking.roomPrice || 2500),
+        status: "CONFIRMED",
+        source: "USER_WEB",
         timestamp: Date.now()
     };
 

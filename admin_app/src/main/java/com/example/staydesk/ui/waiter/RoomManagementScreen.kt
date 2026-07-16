@@ -141,7 +141,7 @@ fun RoomManagementScreen(onBackClick: () -> Unit) {
                         PropertyRoomCard(
                             room = room,
                             onEdit = { selectedRoomForDetails = room },
-                            onDelete = { roomToDelete = room.roomNumber },
+                            onDelete = { roomToDelete = room.roomType }, // Use roomType as ID for deletion logic
                             onUpload = { 
                                 selectedRoomForUpload = room
                                 showPhotoOptions = true
@@ -169,7 +169,7 @@ fun RoomManagementScreen(onBackClick: () -> Unit) {
                 }
             )
         }
-        if (selectedRoomForQR != null) QRDialog(selectedRoomForQR!!, { selectedRoomForQR = null }, { bitmap -> shareQRCode(context, bitmap, selectedRoomForQR!!.roomNumber) })
+        if (selectedRoomForQR != null) QRDialog(selectedRoomForQR!!, { selectedRoomForQR = null }, { bitmap -> shareQRCode(context, bitmap, selectedRoomForQR!!.roomType) })
         
         if (showPhotoOptions) {
             AlertDialog(
@@ -259,7 +259,7 @@ fun PropertyRoomCard(
                     color = Color.Black.copy(alpha = 0.6f)
                 ) {
                     Text(
-                        text = room.roomNumber,
+                        text = "${room.totalUnits} Units",
                         color = Color.White,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         fontWeight = FontWeight.Bold,
@@ -270,6 +270,7 @@ fun PropertyRoomCard(
 
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = room.roomType, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(text = "Total Rooms of this type: ${room.totalUnits}", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
                 Text(text = "Max Occupancy: ${room.maxGuests} Guests", fontSize = 13.sp, color = Color.Gray)
                 
                 Spacer(Modifier.height(16.dp))
@@ -315,7 +316,7 @@ fun AddEditRoomDialog(
     onDeleteClick: (() -> Unit)? = null
 ) {
     var roomType by remember { mutableStateOf(initialRoom?.roomType ?: "") }
-    var roomNumber by remember { mutableStateOf(initialRoom?.roomNumber ?: "") }
+    var totalUnits by remember { mutableIntStateOf(initialRoom?.totalUnits ?: 1) }
     var maxGuests by remember { mutableIntStateOf(initialRoom?.maxGuests ?: 2) }
     
     val hotelId by HotelSession.hotelId.collectAsState()
@@ -324,29 +325,28 @@ fun AddEditRoomDialog(
         Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
             Column {
                 TopAppBar(
-                    title = { Text(if (initialRoom == null) "Add Room" else "Edit Room", fontWeight = FontWeight.Bold) },
+                    title = { Text(if (initialRoom == null) "Add Room Category" else "Edit Category", fontWeight = FontWeight.Bold) },
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, null) } },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
                 )
 
                 Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedTextField(
-                        value = roomNumber,
-                        onValueChange = { roomNumber = it },
-                        label = { Text("Room Number") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    
-                    OutlinedTextField(
                         value = roomType,
                         onValueChange = { roomType = it },
-                        label = { Text("Room Type (e.g. Deluxe, Suite)") },
+                        label = { Text("Room Category Name (e.g. Deluxe, Suite)") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp)
                     )
                     
-                    Text("Maximum Guests", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Numbers of this type (Total Units)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { if(totalUnits > 1) totalUnits-- }) { Icon(Icons.Default.Remove, null) }
+                        Text(totalUnits.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                        IconButton(onClick = { totalUnits++ }) { Icon(Icons.Default.Add, null) }
+                    }
+                    
+                    Text("Maximum Guests per Room", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { if(maxGuests > 1) maxGuests-- }) { Icon(Icons.Default.Remove, null) }
                         Text(maxGuests.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 16.dp))
@@ -357,10 +357,11 @@ fun AddEditRoomDialog(
                     
                     Button(
                         onClick = { 
-                            if (roomNumber.isNotBlank()) {
+                            if (roomType.isNotBlank()) {
                                 onConfirm(Room(
-                                    roomNumber = roomNumber,
+                                    roomNumber = roomType, // Syncing internal ID with Category Name
                                     roomType = roomType,
+                                    totalUnits = totalUnits,
                                     maxGuests = maxGuests,
                                     hotelId = hotelId ?: ""
                                 ))
@@ -370,7 +371,7 @@ fun AddEditRoomDialog(
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Save Room", fontWeight = FontWeight.Bold)
+                        Text("Save Category", fontWeight = FontWeight.Bold)
                     }
                 }
             }

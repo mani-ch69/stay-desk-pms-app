@@ -11,15 +11,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 object BookingRepository {
-    private val rootDb by lazy { com.google.firebase.database.FirebaseDatabase.getInstance().getReference("bookings") }
-    private var db = rootDb
+    private val dbUrl = "https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    private var db = com.google.firebase.database.FirebaseDatabase.getInstance(dbUrl).getReference("hotels/GangaHomes_001/bookings")
     private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
     val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
     private var listener: ValueEventListener? = null
 
     fun startListening(hotelId: String) {
         stopListening()
-        db = FirebaseDatabase.getInstance().getReference("hotels").child(hotelId).child("bookings")
+        db = FirebaseDatabase.getInstance(dbUrl).getReference("hotels").child(hotelId).child("bookings")
         // Optimization: Enable offline persistence for faster subsequent loads
         db.keepSynced(true)
         
