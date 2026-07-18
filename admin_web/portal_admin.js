@@ -317,28 +317,150 @@ function renderAmenities() {
 window.openAddRoomModal = () => {
     document.getElementById('add-room-modal').classList.remove('hidden');
     document.getElementById('add-room-form-container').innerHTML = `
-        <div class="form-group"><label>Category Name</label><input type="text" id="field-room-type" class="form-input-text" placeholder="e.g. Deluxe Room"></div>
-        <div class="form-group"><label>Units</label><input type="number" id="field-room-count" class="form-input-text" value="1"></div>
-        <div class="form-group"><label>Max Guests</label><input type="number" id="field-max-guests" class="form-input-text" value="2"></div>
+        <div class="form-section-card">
+            <h3>Please select</h3>
+            <div class="form-group">
+                <label>Room type</label>
+                <select id="field-room-type" class="form-select">
+                    <option value="">Please select</option>
+                    <option>Single Room</option>
+                    <option>Double Room</option>
+                    <option>Twin Room</option>
+                    <option>Triple Room</option>
+                    <option>Quadruple Room</option>
+                    <option>Family Room</option>
+                    <option>Suite</option>
+                </select>
+            </div>
+            <div class="form-row-flex">
+                <div class="form-group">
+                    <label>Number of rooms (of this type)</label>
+                    <input type="number" id="field-room-count" class="form-input-text" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Smoking policy</label>
+                    <select id="field-smoking" class="form-select">
+                        <option>Non-smoking</option>
+                        <option>Smoking</option>
+                        <option>Both smoking and non-smoking available</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section-card">
+            <h3>Room location</h3>
+            <div class="form-group">
+                <label>Floor Level</label>
+                <select id="field-floor" class="form-select">
+                    <option value="">No selection</option>
+                    <option>Ground floor</option>
+                    <option>1st floor</option>
+                    <option>2nd floor</option>
+                    <option>3rd floor</option>
+                    <option>Upper floor</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-section-card">
+            <h3>Bed options</h3>
+            <div class="form-row-flex">
+                <div class="form-group">
+                    <label>What kind of beds are available?</label>
+                    <select id="field-bed-type" class="form-select">
+                        <option>Twin bed(s) / 90-130 cm wide</option>
+                        <option>Full bed(s) / 131-150 cm wide</option>
+                        <option>Queen bed(s) / 151-180 cm wide</option>
+                        <option>King bed(s) / 181-210 cm wide</option>
+                        <option>Bunk bed</option>
+                        <option>Sofa bed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Number of beds</label>
+                    <select id="field-bed-count" class="form-select">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section-card">
+            <h3>Occupancy</h3>
+            <div class="form-group">
+                <label>Maximum guests</label>
+                <input type="number" id="field-max-guests" class="form-input-text" value="2">
+            </div>
+            <div class="form-row-flex">
+                <div class="form-group">
+                    <label>Maximum adults</label>
+                    <input type="number" id="field-max-adults" class="form-input-text" value="2">
+                </div>
+                <div class="form-group">
+                    <label>Maximum children</label>
+                    <input type="number" id="field-max-children" class="form-input-text" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section-card">
+            <h3>Bathroom options</h3>
+            <div class="form-group">
+                <label>Number of bathrooms</label>
+                <input type="number" id="field-bath-count" class="form-input-text" value="1">
+            </div>
+            <div class="form-group">
+                <label>Is the bathroom private?</label>
+                <div style="display:flex; gap:20px; margin-top:10px;">
+                    <label><input type="radio" name="bath-private" value="yes" checked> Yes</label>
+                    <label><input type="radio" name="bath-private" value="no"> No</label>
+                </div>
+            </div>
+        </div>
     `;
 };
 
-window.closeAddRoomModal = () => document.getElementById('add-room-modal').classList.add('hidden');
-
 window.saveNewRoom = () => {
     const type = document.getElementById('field-room-type').value;
-    const units = parseInt(document.getElementById('field-room-count').value);
-    const maxG = parseInt(document.getElementById('field-max-guests').value);
-    if(!type) return alert("Fill category name!");
+    if(!type) return alert("Bhai, Room type toh select kar lo!");
+
+    const units = parseInt(document.getElementById('field-room-count').value) || 1;
+    const smoking = document.getElementById('field-smoking').value;
+    const floor = document.getElementById('field-floor').value;
+    const bedType = document.getElementById('field-bed-type').value;
+    const bedCount = parseInt(document.getElementById('field-bed-count').value) || 1;
+    const maxG = parseInt(document.getElementById('field-max-guests').value) || 1;
+    const maxA = parseInt(document.getElementById('field-max-adults').value) || 1;
+    const maxC = parseInt(document.getElementById('field-max-children').value) || 0;
+    const bathCount = parseInt(document.getElementById('field-bath-count').value) || 1;
+    const isBathPrivate = document.querySelector('input[name="bath-private"]:checked').value === "yes";
 
     const newRoom = {
-        roomNumber: type, roomType: type, totalUnits: units, maxGuests: maxG, hotelId: hotelId, isAvailable: true
+        roomNumber: type,
+        roomType: type,
+        totalUnits: units,
+        smokingPolicy: smoking,
+        floorLevel: floor,
+        bedType: bedType,
+        numberOfBeds: bedCount,
+        maxGuests: maxG,
+        maxAdults: maxA,
+        maxChildren: maxC,
+        numBathrooms: bathCount,
+        isBathroomPrivate: isBathPrivate,
+        hotelId: hotelId,
+        isAvailable: true,
+        timestamp: Date.now()
     };
 
     db.ref(`hotels/${hotelId}/rooms/${type}`).set(newRoom).then(() => {
         closeAddRoomModal();
-        alert("Room Category Saved!");
-    }).catch(e => alert("Error: " + e.message));
+        alert("Room Category Saved successfully!");
+    }).catch(e => alert("Error saving room: " + e.message));
 };
 
 function renderRoomDetails() {
