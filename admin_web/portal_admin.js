@@ -37,7 +37,7 @@ const firebaseConfig = {
   measurementId: "G-FP1R9GQR1E"
 };
 
-// Initialize Firebase (Safest way)
+// Initialize Firebase
 try {
     firebase.initializeApp(firebaseConfig);
     console.log("Firebase initialized");
@@ -69,15 +69,14 @@ document.addEventListener('click', () => {
 });
 
 window.switchTab = (tabId) => {
-    console.log("Tab Switch:", tabId);
+    console.log("Switching Tab:", tabId);
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`tab-${tabId}`);
     if(target) target.classList.remove('hidden');
 
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     if(window.event && window.event.currentTarget) {
-        const item = window.event.currentTarget.closest('.nav-item');
-        if(item) item.classList.add('active');
+        window.event.currentTarget.classList.add('active');
     }
 
     if(tabId === 'reservations') renderReservations();
@@ -90,13 +89,14 @@ window.toggleMoreFilters = () => {
 };
 
 window.switchSubTab = (subId) => {
-    console.log("Sub-Tab Switch:", subId);
+    console.log("Switching Sub-Tab:", subId);
 
-    // Ensure parent tab is visible
+    // Ensure parent tab (Property) is shown
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     const parentTab = document.getElementById('tab-property-detail');
     if(parentTab) parentTab.classList.remove('hidden');
 
+    // Show correct sub-pane
     document.querySelectorAll('.sub-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`sub-${subId}`);
     if(target) target.classList.remove('hidden');
@@ -121,7 +121,7 @@ window.switchSubTab = (subId) => {
 
 // --- 4. DATE PICKER ---
 function setupSyncedPickers(fromSelector, untilSelector, onNightsUpdate = null) {
-    if (!window.flatpickr) return;
+    if (typeof flatpickr === 'undefined') return;
 
     let fromPicker;
     const untilPicker = flatpickr(untilSelector, {
