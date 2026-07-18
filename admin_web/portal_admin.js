@@ -37,27 +37,31 @@ const firebaseConfig = {
   measurementId: "G-FP1R9GQR1E"
 };
 
-// Initialize Firebase
+// Initialize Firebase (Safest way)
 try {
     firebase.initializeApp(firebaseConfig);
-    console.log("Firebase initialized successfully");
+    console.log("Firebase initialized");
 } catch (e) {
-    console.error("Firebase Initialization Error:", e);
+    console.error("Firebase Init Error:", e);
 }
-const db = firebase.database("https://stay-desk-pms-app-default-rtdb.asia-southeast1.firebasedatabase.app/");
+const db = firebase.database();
 
 let hotelId = "GangaHomes_001";
 let allRooms = [];
-let currentPMSDate = new Date(); // Track current start date for calendar
+let currentPMSDate = new Date();
 
 // --- 3. CORE NAVIGATION ---
 window.toggleDropdown = (e, tabId) => {
     if (e) e.stopPropagation();
     const item = e ? e.currentTarget : null;
     if (!item) return;
+
     const isShowing = item.classList.contains('show-dropdown');
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('show-dropdown'));
-    if (!isShowing) item.classList.add('show-dropdown');
+
+    if (!isShowing) {
+        item.classList.add('show-dropdown');
+    }
 };
 
 document.addEventListener('click', () => {
@@ -65,13 +69,12 @@ document.addEventListener('click', () => {
 });
 
 window.switchTab = (tabId) => {
-    console.log("Switching to tab:", tabId);
+    console.log("Tab Switch:", tabId);
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`tab-${tabId}`);
     if(target) target.classList.remove('hidden');
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
 
-    // Set active class on nav-item
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     if(window.event && window.event.currentTarget) {
         const item = window.event.currentTarget.closest('.nav-item');
         if(item) item.classList.add('active');
@@ -87,19 +90,17 @@ window.toggleMoreFilters = () => {
 };
 
 window.switchSubTab = (subId) => {
-    console.log("Switching to sub-tab:", subId);
+    console.log("Sub-Tab Switch:", subId);
 
-    // Ensure parent tab is visible first
+    // Ensure parent tab is visible
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     const parentTab = document.getElementById('tab-property-detail');
     if(parentTab) parentTab.classList.remove('hidden');
 
-    // Hide all sub-panes and show target
     document.querySelectorAll('.sub-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`sub-${subId}`);
     if(target) target.classList.remove('hidden');
 
-    // Update Header Title dynamically based on selection
     const headerEl = document.getElementById('property-detail-header');
     if(headerEl) {
         const titles = {
@@ -114,19 +115,20 @@ window.switchSubTab = (subId) => {
         headerEl.innerText = titles[subId] || "Property Detail";
     }
 
-    // Auto-render specific sub-tab data
     if(subId === 'room-details') renderRoomDetails();
     if(subId === 'amenities') renderAmenities();
 };
 
-// --- 4. DATE PICKER COMPONENT (REUSABLE) ---
+// --- 4. DATE PICKER ---
 function setupSyncedPickers(fromSelector, untilSelector, onNightsUpdate = null) {
+    if (!window.flatpickr) return;
+
     let fromPicker;
     const untilPicker = flatpickr(untilSelector, {
         dateFormat: "Y-m-d",
         altInput: true,
         altFormat: "Y-m-d",
-        defaultDate: new Date().getTime() + 24 * 60 * 60 * 1000,
+        defaultDate: new Date().getTime() + 86400000,
         onChange: function(selectedDates) {
             if (selectedDates.length === 1 && fromPicker) {
                 const currentRange = fromPicker.selectedDates;
@@ -134,7 +136,7 @@ function setupSyncedPickers(fromSelector, untilSelector, onNightsUpdate = null) 
                     fromPicker.setDate([currentRange[0], selectedDates[0]], false);
                     if(onNightsUpdate) {
                         const diff = selectedDates[0] - currentRange[0];
-                        onNightsUpdate(Math.ceil(diff / (1000 * 60 * 60 * 24)));
+                        onNightsUpdate(Math.ceil(diff / 86400000));
                     }
                 }
             }
@@ -146,36 +148,27 @@ function setupSyncedPickers(fromSelector, untilSelector, onNightsUpdate = null) 
         dateFormat: "Y-m-d",
         altInput: true,
         altFormat: "Y-m-d",
-        defaultDate: [new Date(), new Date().getTime() + 24 * 60 * 60 * 1000],
+        defaultDate: [new Date(), new Date().getTime() + 86400000],
         onReady: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length > 0) {
-                instance.altInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
-            }
-        },
-        onValueUpdate: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length > 0) {
-                instance.altInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
-            }
+            if (selectedDates.length > 0) instance.altInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
         },
         onChange: function(selectedDates) {
             if (selectedDates.length === 2) {
                 untilPicker.setDate(selectedDates[1], false);
                 if(onNightsUpdate) {
                     const diff = selectedDates[1] - selectedDates[0];
-                    onNightsUpdate(Math.ceil(diff / (1000 * 60 * 60 * 24)));
+                    onNightsUpdate(Math.ceil(diff / 86400000));
                 }
             }
         }
     });
 }
 
-// --- 5. INITIALIZATION & DATA SYNC ---
+// --- 5. INITIALIZATION ---
 window.onload = () => {
     startRealtimeSync();
     renderAmenities();
     initDashboard();
-
-    // Reusable Calendar Component implementation for both sections
     setupSyncedPickers("#res-from-date", "#res-to-date");
     setupSyncedPickers("#mb-check-in", "#mb-check-out", (nights) => {
         const nightEl = document.getElementById('mb-nights');
@@ -191,23 +184,17 @@ function startRealtimeSync() {
         const d = snap.val();
         if(d) {
             if(document.getElementById('header-hotel-name')) document.getElementById('header-hotel-name').innerText = d.hotelName;
-            if(document.getElementById('disp-hotel-name')) document.getElementById('disp-hotel-name').innerText = d.hotelName;
-            if(document.getElementById('disp-hotel-addr')) document.getElementById('disp-hotel-addr').innerText = d.address;
         }
     });
 
     db.ref(`hotels/${hotelId}/rooms`).on('value', snap => {
         allRooms = [];
         snap.forEach(c => allRooms.push(c.val()));
-        renderRoomPhotoSections();
         renderRoomDetails();
     });
 }
 
-// --- 6. DASHBOARD & BOOKING LOGIC ---
-function initDashboard() {
-    renderDashBookings();
-}
+function initDashboard() { renderDashBookings(); }
 
 function renderDashBookings() {
     const container = document.getElementById('dash-recent-bookings');
@@ -216,12 +203,11 @@ function renderDashBookings() {
         const rows = [];
         snap.forEach(child => {
             const b = child.val();
-            const displayId = b.bookingNumber || b.id.slice(-8);
             rows.push(`
                 <tr>
-                    <td>${displayId}</td>
+                    <td>${b.bookingNumber || b.id.slice(-8)}</td>
                     <td><b>${b.guestName}</b></td>
-                    <td>Room ${b.roomNumber || '-'}</td>
+                    <td>${b.roomNumber || '-'}</td>
                     <td>${new Date(b.checkInDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short' })}</td>
                     <td>${new Date(b.checkOutDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short' })}</td>
                     <td>${UI.badge(b.status || 'Confirmed', b.status || 'ok')}</td>
@@ -241,33 +227,21 @@ window.openManualBooking = () => {
 
 window.closeManualBooking = () => document.getElementById('manual-booking-modal').classList.add('hidden');
 
-window.filterVacantRooms = () => {
-    const type = document.getElementById('mb-room-type').value;
-    const roomSelect = document.getElementById('mb-room-id');
-    const vacant = allRooms.filter(r => r.roomType === type);
-    roomSelect.innerHTML = vacant.map(r => `<option value="${r.roomNumber || r.id}">${r.roomNumber || 'Room ' + r.id.slice(-3)}</option>`).join('');
-};
-
 window.calculateBookingTotal = () => {
     const nights = parseInt(document.getElementById('mb-nights').value) || 1;
     const rent = parseFloat(document.getElementById('mb-rent').value) || 0;
-    const discountPercent = parseFloat(document.getElementById('mb-discount').value) || 0;
+    const discount = parseFloat(document.getElementById('mb-discount').value) || 0;
     const advance = parseFloat(document.getElementById('mb-advance').value) || 0;
     const fullPay = document.getElementById('mb-full-pay').checked;
 
-    const subtotal = nights * rent;
-    const discountAmount = (subtotal * discountPercent) / 100;
-    const total = subtotal - discountAmount;
+    const total = (nights * rent) * (1 - discount/100);
     document.getElementById('mb-total').value = total.toLocaleString();
 
     if(fullPay) {
         document.getElementById('mb-advance').value = total;
         document.getElementById('mb-remaining').value = "0";
-        document.getElementById('mb-advance').disabled = true;
     } else {
-        document.getElementById('mb-advance').disabled = false;
-        const remaining = total - advance;
-        document.getElementById('mb-remaining').value = remaining.toLocaleString();
+        document.getElementById('mb-remaining').value = (total - advance).toLocaleString();
     }
 };
 
@@ -276,33 +250,30 @@ window.toggleFullPay = () => calculateBookingTotal();
 window.submitManualBooking = () => {
     const guestName = document.getElementById('mb-guest-name').value;
     const roomType = document.getElementById('mb-room-type').value;
-    if(!guestName || !roomType) { alert("Bhai, Guest Name aur Room Type toh bhar do!"); return; }
-
     const checkInEl = document.getElementById('mb-check-in');
     const dates = checkInEl && checkInEl._flatpickr ? checkInEl._flatpickr.selectedDates : [];
-    if (dates.length < 2) { alert("Bhai, Stay Dates toh sahi se select kar lo!"); return; }
 
-    const bookingNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    if(!guestName || !roomType || dates.length < 2) { alert("Please fill all details!"); return; }
 
+    const bookingId = "MB-" + Date.now();
     const newBooking = {
-        id: "MB-" + Date.now(),
-        bookingNumber: bookingNumber,
+        id: bookingId,
+        bookingNumber: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
         guestName: guestName,
-        roomNumber: roomType, // Using room type as the identifier
-        checkInDate: dates[0].toISOString(),
-        checkOutDate: dates[1].toISOString(),
+        roomNumber: roomType,
+        checkInDate: dates[0].getTime(),
+        checkOutDate: dates[1].getTime(),
         totalAmount: parseFloat(document.getElementById('mb-total').value.replace(/,/g, '')),
-        status: "Confirmed",
+        status: "CONFIRMED",
         timestamp: Date.now()
     };
 
-    db.ref(`hotels/${hotelId}/bookings`).push(newBooking).then(() => {
+    db.ref(`hotels/${hotelId}/bookings/${bookingId}`).set(newBooking).then(() => {
         closeManualBooking();
-        alert("Manual Booking Successful! ID: " + bookingNumber);
+        alert("Booking Saved!");
     });
 };
 
-// --- 7. PROPERTY MANAGEMENT ---
 function renderReservations() {
     const container = document.getElementById('reservations-table-body');
     if(!container) return;
@@ -310,291 +281,110 @@ function renderReservations() {
         const rows = [];
         snap.forEach(child => {
             const b = child.val();
-            const cin = new Date(b.checkInDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-            const cout = new Date(b.checkOutDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-            const bookedOn = b.timestamp ? new Date(b.timestamp).toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) : '-';
-            const displayId = b.bookingNumber || b.id.slice(-8);
             rows.push(`
                 <tr>
-                    <td><span class="guest-name-link">${b.guestName}</span></td>
-                    <td>${cin}</td>
-                    <td>${cout}</td>
-                    <td>1 × ${b.roomNumber || 'Deluxe'}</td>
-                    <td>${bookedOn}</td>
-                    <td>${UI.badge(b.status || 'OK', b.status || 'ok')}</td>
+                    <td>${b.guestName}</td>
+                    <td>${new Date(b.checkInDate).toLocaleDateString('en-GB')}</td>
+                    <td>${new Date(b.checkOutDate).toLocaleDateString('en-GB')}</td>
+                    <td>1 × ${b.roomNumber}</td>
+                    <td>${b.timestamp ? new Date(b.timestamp).toLocaleDateString('en-GB') : '-'}</td>
+                    <td>${UI.badge(b.status || 'OK', 'ok')}</td>
                     <td>₹ ${(b.totalAmount || 0).toLocaleString()}</td>
                     <td>₹ 0</td>
-                    <td><span class="booking-id-link">${displayId}</span></td>
+                    <td>${b.bookingNumber || b.id.slice(-8)}</td>
                 </tr>
             `);
         });
-        container.innerHTML = rows.join('') || '<tr><td colspan="9" style="text-align:center;">No reservations found</td></tr>';
+        container.innerHTML = rows.join('') || '<tr><td colspan="9">No reservations found</td></tr>';
     });
 }
 
 function renderAmenities() {
-    const amenities = ["Air conditioning", "Balcony", "View", "Flat-screen TV", "Terrace", "Electric kettle", "Toilet paper", "Towels", "Linens"];
+    const amenities = ["Air conditioning", "Wi-Fi", "TV", "Hot Water", "Kettle", "Towels"];
     const container = document.getElementById('amenities-list');
     if(!container) return;
     container.innerHTML = amenities.map(name => `
         <div class="amenity-item">
             <span class="amenity-name">${name}</span>
             <div class="segmented-control">
-                <div class="seg-btn" onclick="toggleSeg(this)">All</div>
-                <div class="seg-btn" onclick="toggleSeg(this)">Some</div>
-                <div class="seg-btn active" onclick="toggleSeg(this)">None</div>
+                <div class="seg-btn" onclick="this.parentElement.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active')">All</div>
+                <div class="seg-btn active" onclick="this.parentElement.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active')">None</div>
             </div>
         </div>
     `).join('');
 }
 
-window.toggleSeg = (el) => {
-    const parent = el.parentElement;
-    parent.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-};
-
 window.openAddRoomModal = () => {
     document.getElementById('add-room-modal').classList.remove('hidden');
-    renderAddRoomForm();
+    document.getElementById('add-room-form-container').innerHTML = `
+        <div class="form-group"><label>Category Name</label><input type="text" id="field-room-type" class="form-input-text" placeholder="e.g. Deluxe Room"></div>
+        <div class="form-group"><label>Units</label><input type="number" id="field-room-count" class="form-input-text" value="1"></div>
+        <div class="form-group"><label>Max Guests</label><input type="number" id="field-max-guests" class="form-input-text" value="2"></div>
+    `;
 };
 
 window.closeAddRoomModal = () => document.getElementById('add-room-modal').classList.add('hidden');
 
-function renderAddRoomForm() {
-    const container = document.getElementById('add-room-form-container');
-    if(!container) return;
-    container.innerHTML = `
-        <div class="form-section-card">
-            <h3>Basic Info</h3>
-            <div class="form-group">
-                <label>Room type (Category Name)</label>
-                <input type="text" class="form-input-text" id="field-room-type" placeholder="e.g. Deluxe Double Room">
-            </div>
-            <div class="form-row-flex">
-                <div class="form-group">
-                    <label>Number of units</label>
-                    <input type="number" class="form-input-text" value="1" id="field-room-count">
-                </div>
-                <div class="form-group">
-                    <label>Smoking policy</label>
-                    <select class="form-select" id="field-smoking">
-                        <option>Non-smoking</option>
-                        <option>Smoking</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="form-section-card">
-            <h3>Room Specifications</h3>
-            <div class="form-row-flex">
-                <div class="form-group">
-                    <label>Floor Level</label>
-                    <select class="form-select" id="field-floor">
-                        <option>Ground floor</option>
-                        <option>1st floor</option>
-                        <option>2nd floor</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Bed Type</label>
-                    <input type="text" class="form-input-text" id="field-bed-type" value="Double Bed">
-                </div>
-            </div>
-            <div class="form-row-flex">
-                <div class="form-group">
-                    <label>Max Guests</label>
-                    <input type="number" class="form-input-text" id="field-max-guests" value="2">
-                </div>
-                <div class="form-group">
-                    <label>Room Size (sqft)</label>
-                    <input type="text" class="form-input-text" id="field-room-size" value="250 sqft">
-                </div>
-            </div>
-        </div>
-    `;
-}
-
 window.saveNewRoom = () => {
-    const roomType = document.getElementById('field-room-type').value;
-    if(!roomType) { alert('Bhai, Room type toh bhar do!'); return; }
-
-    const roomCount = parseInt(document.getElementById('field-room-count').value) || 1;
-    const smoking = document.getElementById('field-smoking').value;
-    const floor = document.getElementById('field-floor').value;
-    const bed = document.getElementById('field-bed-type').value;
-    const maxG = parseInt(document.getElementById('field-max-guests').value) || 2;
-    const size = document.getElementById('field-room-size').value;
+    const type = document.getElementById('field-room-type').value;
+    const units = parseInt(document.getElementById('field-room-count').value);
+    const maxG = parseInt(document.getElementById('field-max-guests').value);
+    if(!type) return alert("Fill category name!");
 
     const newRoom = {
-        roomNumber: roomType, // Using Category Name as ID
-        totalUnits: roomCount,
-        hotelId: hotelId,
-        qrToken: "QR-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        roomType: roomType,
-        smokingPolicy: smoking,
-        floorLevel: floor,
-        bedType: bed,
-        numberOfBeds: 1,
-        maxGuests: maxG,
-        maxAdults: maxG,
-        maxChildren: 0,
-        numBathrooms: 1,
-        isBathroomPrivate: true,
-        roomSize: size,
-        hasAc: true,
-        isBathroomInside: true,
-        hasGeyser: true,
-        hasKettle: true,
-        imageUrl: "",
-        isAvailable: true
+        roomNumber: type, roomType: type, totalUnits: units, maxGuests: maxG, hotelId: hotelId, isAvailable: true
     };
 
-    db.ref(`hotels/${hotelId}/rooms/${roomType}`).set(newRoom).then(() => {
+    db.ref(`hotels/${hotelId}/rooms/${type}`).set(newRoom).then(() => {
         closeAddRoomModal();
-        alert("Room Category added successfully!");
-    }).catch(err => {
-        console.error("Save Error:", err);
-        alert("Error saving room: " + err.message);
-    });
+        alert("Room Category Saved!");
+    }).catch(e => alert("Error: " + e.message));
 };
 
 function renderRoomDetails() {
     const container = document.getElementById('room-details-container');
     if(!container) return;
-
     container.innerHTML = allRooms.map(room => `
         <div class="room-card">
-            <div class="room-card-img-wrap">
-                <img src="${room.imageUrl || 'https://i.ibb.co/6P0f9pL/ganga-homes-logo.jpg'}">
-                <div class="room-card-info-bar">
-                    <h4>${room.roomType}</h4>
-                    <p>(${room.roomNumber})</p>
-                </div>
-            </div>
-            <div class="room-card-body">
-                <div class="room-stat-line">Units Available: <b>${room.totalUnits || 1}</b></div>
-                <div class="room-stat-line">Max Guests: <b>${room.maxGuests}</b></div>
-                <div class="room-stat-line">Bed Type: <b>${room.bedType}</b></div>
-                <div class="room-stat-line">Status: <b>${room.isAvailable ? 'Bookable' : 'Closed'}</b></div>
-            </div>
-            <div class="room-card-actions">
-                <button class="btn btn-outline btn-sm" onclick="alert('Edit logic synced with Android')">Edit</button>
-                <button class="btn btn-outline btn-sm" onclick="db.ref('hotels/${hotelId}/rooms/${room.roomNumber}').remove()">Delete</button>
-            </div>
+            <h4>${room.roomType}</h4>
+            <p>Units: ${room.totalUnits}</p>
+            <button class="btn btn-outline btn-sm" onclick="db.ref('hotels/${hotelId}/rooms/${room.roomNumber}').remove()">Delete</button>
         </div>
-    `).join('') + `
-        <div class="create-room-card" onclick="openAddRoomModal()">
-            <h3>Create a new room</h3>
-            <div class="plus-circle">+</div>
-        </div>
-    `;
+    `).join('') + '<div class="create-room-card" onclick="openAddRoomModal()">+ Add Category</div>';
 }
-
-function renderRoomPhotoSections() {
-    const container = document.getElementById('room-photos-container');
-    if(!container) return;
-    const distinctTypes = [...new Set(allRooms.map(r => r.roomType))];
-    container.innerHTML = distinctTypes.map(type => UI.card(`${type} Gallery`, '<div class="gallery-grid"><div class="photo-add-btn">+</div></div>', '<button class="btn btn-outline btn-sm">+ Add Photos</button>')).join('');
-}
-
-// --- 8. TIMELINE CALENDAR V2 LOGIC ---
-
-window.pmsShift = (days) => {
-    currentPMSDate.setDate(currentPMSDate.getDate() + days);
-    renderTimelineCalendar();
-};
-
-window.pmsToday = () => {
-    currentPMSDate = new Date();
-    renderTimelineCalendar();
-};
 
 function renderTimelineCalendar() {
-    const monthsContainer = document.getElementById('pms-months-header');
-    const daysContainer = document.getElementById('pms-days-header');
-    const contentContainer = document.getElementById('pms-timeline-content');
-    const titleEl = document.getElementById('calendar-title');
+    const content = document.getElementById('pms-timeline-content');
+    const daysHeader = document.getElementById('pms-days-header');
+    if(!content || !daysHeader) return;
 
-    if(!monthsContainer || !daysContainer || !contentContainer) return;
-
-    // 1. Generate 31 days
     const dates = [];
-    const tempDate = new Date(currentPMSDate);
     for(let i=0; i<31; i++) {
-        dates.push(new Date(tempDate));
-        tempDate.setDate(tempDate.getDate() + 1);
+        let d = new Date(currentPMSDate); d.setDate(d.getDate() + i);
+        dates.push(d);
     }
 
-    // Update Title Range
-    const endRangeDate = new Date(dates[30]);
-    titleEl.innerText = `Calendar ${dates[0].toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit', year:'numeric'})} - ${endRangeDate.toLocaleDateString('en-GB', {day:'2-digit', month:'2-digit', year:'numeric'})}`;
+    daysHeader.innerHTML = dates.map(d => `<div class="day-cell"><span>${d.getDate()}</span></div>`).join('');
 
-    // 2. Render Months Header
-    const monthsMap = {};
-    dates.forEach(d => {
-        const m = d.toLocaleDateString('en-GB', { month: 'long' });
-        monthsMap[m] = (monthsMap[m] || 0) + 1;
-    });
-    monthsContainer.innerHTML = Object.entries(monthsMap).map(([name, count]) => `
-        <div class="month-label" style="width: ${count * 40}px;">${name}</div>
-    `).join('');
-
-    // 3. Render Days Header
-    daysContainer.innerHTML = dates.map(d => `
-        <div class="day-cell ${[0,6].includes(d.getDay()) ? 'weekend' : ''}">
-            <label>${d.toLocaleDateString('en-GB', { weekday: 'short' }).substring(0,2)}</label>
-            <span>${d.getDate()}</span>
-        </div>
-    `).join('');
-
-    // 4. Render Rows (Rooms)
     db.ref(`hotels/${hotelId}/bookings`).get().then(snap => {
-        const liveBookings = [];
-        snap.forEach(c => liveBookings.push(c.val()));
-
-        contentContainer.innerHTML = allRooms.map((room, idx) => {
-            // Filter bookings for this room category
-            const roomBookings = liveBookings.filter(b => b.roomNumber === room.roomType);
-
+        const bookings = []; snap.forEach(c => bookings.push(c.val()));
+        content.innerHTML = allRooms.map(room => {
+            const rBookings = bookings.filter(b => b.roomNumber === room.roomType);
             return `
                 <div class="timeline-row">
-                    <div class="timeline-room-sidebar">
-                        <div class="room-name">${room.roomType}</div>
-                        <div class="room-desc">${room.totalUnits} Units Available</div>
-                    </div>
-
-                    <!-- Grid Background -->
-                    <div class="timeline-grid-bg">
-                        ${dates.map(d => `<div class="grid-line ${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>`).join('')}
-                    </div>
-
-                    <!-- Booking Bars (Live Data) -->
-                    ${roomBookings.map(b => {
-                        const bStart = new Date(b.checkInDate);
-                        const bEnd = new Date(b.checkOutDate);
-
-                        // Calculate offset from current calendar start
-                        const dayDiff = Math.floor((bStart - dates[0]) / (1000 * 60 * 60 * 24));
-                        const duration = Math.ceil((bEnd - bStart) / (1000 * 60 * 60 * 24));
-
-                        // Only show if within visible range
-                        if (dayDiff + duration < 0 || dayDiff > 31) return "";
-
-                        const leftPos = 240 + (dayDiff * 40);
-                        const widthSize = (duration * 40) - 4;
-
-                        return `
-                            <div class="booking-bar bar-blue" style="left: ${leftPos}px; width: ${widthSize}px;">
-                                <div class="bar-content">
-                                    <span class="icon-user">👤</span>
-                                    <span>${b.guestName}</span>
-                                </div>
-                            </div>
-                        `;
+                    <div class="timeline-room-sidebar"><b>${room.roomType}</b></div>
+                    <div class="timeline-grid-bg">${dates.map(() => '<div class="grid-line"></div>').join('')}</div>
+                    ${rBookings.map(b => {
+                        const start = new Date(b.checkInDate);
+                        const diff = Math.floor((start - dates[0]) / 86400000);
+                        if(diff < 0 || diff > 30) return '';
+                        return `<div class="booking-bar bar-blue" style="left:${240 + diff*40}px; width:40px;">${b.guestName}</div>`;
                     }).join('')}
                 </div>
             `;
         }).join('');
     });
 }
+
+window.pmsShift = (days) => { currentPMSDate.setDate(currentPMSDate.getDate() + days); renderTimelineCalendar(); };
+window.pmsToday = () => { currentPMSDate = new Date(); renderTimelineCalendar(); };
