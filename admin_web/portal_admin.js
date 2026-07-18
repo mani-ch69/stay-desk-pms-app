@@ -38,7 +38,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db = firebase.database("https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
 let hotelId = "GangaHomes_001";
 let allRooms = [];
@@ -430,6 +430,10 @@ window.saveNewRoom = () => {
 
     db.ref(`hotels/${hotelId}/rooms/${roomType}`).set(newRoom).then(() => {
         closeAddRoomModal();
+        alert("Room Category added successfully!");
+    }).catch(err => {
+        console.error("Save Error:", err);
+        alert("Error saving room: " + err.message);
     });
 };
 

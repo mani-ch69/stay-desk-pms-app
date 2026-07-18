@@ -12,7 +12,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 try { firebase.initializeApp(firebaseConfig); } catch (e) { console.error("Firebase Init Error:", e); }
-const db = firebase.database();
+const db = firebase.database("https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/");
 const auth = firebase.auth();
 
 // Anonymous Login
