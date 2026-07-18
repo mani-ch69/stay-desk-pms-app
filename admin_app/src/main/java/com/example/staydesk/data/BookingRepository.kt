@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 object BookingRepository {
-    private val dbUrl = "https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    private val dbUrl = "https://stay-desk-pms-app-default-rtdb.asia-southeast1.firebasedatabase.app/"
     private var db = com.google.firebase.database.FirebaseDatabase.getInstance(dbUrl).getReference("hotels/GangaHomes_001/bookings")
     private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
     val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()

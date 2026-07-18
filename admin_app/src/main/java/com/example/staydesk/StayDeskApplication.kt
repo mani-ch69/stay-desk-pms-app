@@ -13,7 +13,7 @@ class StayDeskApplication : Application() {
             FirebaseApp.initializeApp(this)
             
             // Explicitly set database URL
-            val db = FirebaseDatabase.getInstance("https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            val db = FirebaseDatabase.getInstance("https://stay-desk-pms-app-default-rtdb.asia-southeast1.firebasedatabase.app/")
             db.setPersistenceEnabled(true)
         } catch (e: Exception) {
             android.util.Log.e("StayDeskApp", "Firebase initialization failed. " +

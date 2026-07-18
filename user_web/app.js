@@ -2,7 +2,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyAYlLHaBBfqjoyG5mwZ_0VxVmMJttQBCEY",
     authDomain: "stay-desk-pms-app.firebaseapp.com",
-    databaseURL: "https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    databaseURL: "https://stay-desk-pms-app-default-rtdb.asia-southeast1.firebasedatabase.app/",
     projectId: "stay-desk-pms-app",
     storageBucket: "stay-desk-pms-app.firebasestorage.app",
     messagingSenderId: "160367544031",
@@ -16,7 +16,7 @@ try {
 } catch (e) {
     console.error("Firebase Init Error:", e);
 }
-const db = firebase.database();
+const db = firebase.database("https://stay-desk-pms-app-default-rtdb.asia-southeast1.firebasedatabase.app/");
 const auth = firebase.auth();
 
 // Anonymous Login
