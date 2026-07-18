@@ -471,13 +471,40 @@ window.saveNewRoom = () => {
 function renderRoomDetails() {
     const container = document.getElementById('room-details-container');
     if(!container) return;
-    container.innerHTML = allRooms.map(room => `
-        <div class="room-card">
-            <h4>${room.roomType}</h4>
-            <p>Units: ${room.totalUnits}</p>
-            <button class="btn btn-outline btn-sm" onclick="db.ref('hotels/${hotelId}/rooms/${room.roomNumber}').remove()">Delete</button>
+
+    container.innerHTML = allRooms.map(room => {
+        const roomImg = room.imageUrl || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800';
+        // Generate a pseudo-ID if not present
+        const displayId = room.id || Math.floor(100000000 + Math.random() * 900000000).toString();
+
+        return `
+            <div class="room-card-v2">
+                <div class="room-card-header">
+                    <img src="${roomImg}" alt="${room.roomType}">
+                    <div class="room-title-overlay">
+                        <h4>${room.roomType}</h4>
+                        <p>(${displayId})</p>
+                    </div>
+                </div>
+                <div class="room-card-content">
+                    <div class="stat-row">Maximum guests: <b>${room.maxGuests} guests</b></div>
+                    <div class="stat-row">Maximum adults: <b>${room.maxAdults} adults</b></div>
+                    <div class="stat-row">Maximum children: <b>${room.maxChildren} children</b></div>
+                    <div class="stat-row">Number of this type: <b>${room.totalUnits}</b></div>
+
+                    <div class="room-card-actions-v2">
+                        <button class="btn-edit-lite" onclick="alert('Edit mode synced')">Edit</button>
+                        <button class="btn-upload-blue" onclick="alert('Upload photos synced')">Upload photos</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('') + `
+        <div class="create-room-card" onclick="openAddRoomModal()">
+            <h3>Create a new room</h3>
+            <div class="plus-circle">+</div>
         </div>
-    `).join('') + '<div class="create-room-card" onclick="openAddRoomModal()">+ Add Category</div>';
+    `;
 }
 
 function renderTimelineCalendar() {
