@@ -71,8 +71,10 @@ window.switchTab = (tabId) => {
     if(target) target.classList.remove('hidden');
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
 
-    if(window.event && window.event.currentTarget && window.event.currentTarget.classList.contains('nav-item')) {
-        window.event.currentTarget.classList.add('active');
+    // Set active class on nav-item
+    if(window.event && window.event.currentTarget) {
+        const item = window.event.currentTarget.closest('.nav-item');
+        if(item) item.classList.add('active');
     }
 
     if(tabId === 'reservations') renderReservations();
@@ -86,6 +88,13 @@ window.toggleMoreFilters = () => {
 
 window.switchSubTab = (subId) => {
     console.log("Switching to sub-tab:", subId);
+
+    // Ensure parent tab is visible first
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+    const parentTab = document.getElementById('tab-property-detail');
+    if(parentTab) parentTab.classList.remove('hidden');
+
+    // Hide all sub-panes and show target
     document.querySelectorAll('.sub-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`sub-${subId}`);
     if(target) target.classList.remove('hidden');
@@ -93,13 +102,16 @@ window.switchSubTab = (subId) => {
     // Update Header Title dynamically based on selection
     const headerEl = document.getElementById('property-detail-header');
     if(headerEl) {
-        if(subId === 'general-info') headerEl.innerText = "General info & property status";
-        if(subId === 'vat-tax') headerEl.innerText = "VAT/Tax/Charges";
-        if(subId === 'photos') headerEl.innerText = "Photos";
-        if(subId === 'amenities') headerEl.innerText = "Room Amenities";
-        if(subId === 'room-details') headerEl.innerText = "Room Detail";
-        if(subId === 'your-profile') headerEl.innerText = "Your Profile";
-        if(subId === 'messaging') headerEl.innerText = "Messaging Preferences";
+        const titles = {
+            'general-info': "General info & property status",
+            'vat-tax': "VAT/Tax/Charges",
+            'photos': "Photos",
+            'amenities': "Room Amenities",
+            'room-details': "Room Detail",
+            'your-profile': "Your Profile",
+            'messaging': "Messaging Preferences"
+        };
+        headerEl.innerText = titles[subId] || "Property Detail";
     }
 
     // Auto-render specific sub-tab data
