@@ -110,20 +110,20 @@ function renderRooms() {
 
     allRooms.forEach(room => {
         const roomImg = room.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800';
-        const price = room.roomPrice || '2,500';
+        const price = room.roomPrice || room.price || '2,500';
+        const categoryName = room.roomType || room.roomNumber || "Deluxe Room";
 
         roomsGridEl.innerHTML += `
             <div class="room-card">
                 <div class="room-img-wrapper">
-                    <img src="${roomImg}" alt="${room.roomType}">
+                    <img src="${roomImg}" alt="${categoryName}">
                     ${room.isAvailable ? '' : '<div class="popular-badge" style="background:#666">Fully Booked</div>'}
-                    ${room.roomNumber === "101" ? '<div class="popular-badge">Most Popular</div>' : ''}
                 </div>
                 <div class="room-info">
-                    <h3>${room.roomType}</h3>
+                    <h3>${categoryName}</h3>
                     <div class="room-stats">
-                        <span>👤 ${room.maxGuests} Adults</span>
-                        <span>🛏️ ${room.bedType}</span>
+                        <span>👤 ${room.maxGuests || 2} Adults</span>
+                        <span>🛏️ ${room.bedType || 'King Size'}</span>
                         <span>📏 ${room.roomSize || '250 sq.ft.'}</span>
                     </div>
                     <div class="room-icons">
@@ -134,7 +134,7 @@ function renderRooms() {
                             <span class="price-tag">₹${price}</span>
                             <span class="price-unit">/ night</span>
                         </div>
-                        <button class="btn-view-details" onclick="openBookingModal('${room.roomNumber}')">View Details</button>
+                        <button class="btn-view-details" onclick="openBookingModal('${categoryName}')">View Details</button>
                     </div>
                 </div>
             </div>`;
@@ -149,12 +149,12 @@ function setDefaultDates() {
 }
 
 // --- BOOKING MODAL ---
-window.openBookingModal = (roomNumber) => {
-    const room = allRooms.find(r => r.roomNumber === roomNumber);
+window.openBookingModal = (categoryId) => {
+    const room = allRooms.find(r => (r.roomType === categoryId || r.roomNumber === categoryId));
     if (!room) return;
     selectedRoomForBooking = room;
 
-    document.getElementById('modal-room-type').innerText = room.roomType;
+    document.getElementById('modal-room-type').innerText = room.roomType || room.roomNumber;
     document.getElementById('booking-modal').classList.remove('hidden');
 };
 
@@ -179,7 +179,7 @@ document.getElementById('btn-confirm-booking').onclick = () => {
         id: bookingId,
         bookingNumber: bookingId,
         hotelId: hotelId,
-        roomNumber: selectedRoomForBooking.roomNumber,
+        roomNumber: selectedRoomForBooking.roomType || selectedRoomForBooking.roomNumber,
         guestName: name,
         guestPhone: phone,
         checkInDate: new Date(checkIn).getTime(),
