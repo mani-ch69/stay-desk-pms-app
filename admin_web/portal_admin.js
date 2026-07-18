@@ -476,8 +476,6 @@ function renderRoomPhotoSections() {
     container.innerHTML = distinctTypes.map(type => UI.card(`${type} Gallery`, '<div class="gallery-grid"><div class="photo-add-btn">+</div></div>', '<button class="btn btn-outline btn-sm">+ Add Photos</button>')).join('');
 }
 
-// --- 8. PMS GRID (CALENDAR) LOGIC ---
-
 // --- 8. TIMELINE CALENDAR V2 LOGIC ---
 
 window.pmsShift = (days) => {
@@ -546,11 +544,11 @@ function renderTimelineCalendar() {
 
                     <!-- Grid Background -->
                     <div class="timeline-grid-bg">
-                        ${dates.map(d => `<div class="grid-line ${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>`).join('')}
+                        ${dates.map(d => \`<div class="grid-line \${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>\`).join('')}
                     </div>
 
                     <!-- Booking Bars (Live Data) -->
-                    ${roomBookings.map(b => {
+                    \${roomBookings.map(b => {
                         const bStart = new Date(b.checkInDate);
                         const bEnd = new Date(b.checkOutDate);
 
@@ -564,14 +562,14 @@ function renderTimelineCalendar() {
                         const leftPos = 240 + (dayDiff * 40);
                         const widthSize = (duration * 40) - 4;
 
-                        return `
-                            <div class="booking-bar bar-blue" style="left: ${leftPos}px; width: ${widthSize}px;">
+                        return \`
+                            <div class="booking-bar bar-blue" style="left: \${leftPos}px; width: \${widthSize}px;">
                                 <div class="bar-content">
                                     <span class="icon-user">👤</span>
-                                    <span>${b.guestName}</span>
+                                    <span>\${b.guestName}</span>
                                 </div>
                             </div>
-                        `;
+                        \`;
                     }).join('')}
                 </div>
             `;
