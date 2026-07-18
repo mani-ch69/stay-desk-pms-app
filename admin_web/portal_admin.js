@@ -44,7 +44,7 @@ try {
 } catch (e) {
     console.error("Firebase Initialization Error:", e);
 }
-const db = firebase.database("https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/");
+const db = firebase.database(); // Use databaseURL from config automatically
 
 let hotelId = "GangaHomes_001";
 let allRooms = [];
