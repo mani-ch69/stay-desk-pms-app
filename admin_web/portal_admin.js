@@ -314,6 +314,11 @@ function renderAmenities() {
     `).join('');
 }
 
+window.closeAddRoomModal = () => {
+    const modal = document.getElementById('add-room-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
 window.openAddRoomModal = () => {
     document.getElementById('add-room-modal').classList.remove('hidden');
     document.getElementById('add-room-form-container').innerHTML = `
