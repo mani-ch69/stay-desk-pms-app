@@ -37,7 +37,13 @@ const firebaseConfig = {
   measurementId: "G-FP1R9GQR1E"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+    console.log("Firebase initialized successfully");
+} catch (e) {
+    console.error("Firebase Initialization Error:", e);
+}
 const db = firebase.database("https://stay-desk-pms-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
 let hotelId = "GangaHomes_001";
@@ -59,13 +65,16 @@ document.addEventListener('click', () => {
 });
 
 window.switchTab = (tabId) => {
+    console.log("Switching to tab:", tabId);
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`tab-${tabId}`);
     if(target) target.classList.remove('hidden');
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
     if(window.event && window.event.currentTarget && window.event.currentTarget.classList.contains('nav-item')) {
         window.event.currentTarget.classList.add('active');
     }
+
     if(tabId === 'reservations') renderReservations();
     if(tabId === 'pms-grid') renderTimelineCalendar();
 };
@@ -76,6 +85,7 @@ window.toggleMoreFilters = () => {
 };
 
 window.switchSubTab = (subId) => {
+    console.log("Switching to sub-tab:", subId);
     document.querySelectorAll('.sub-pane').forEach(p => p.classList.add('hidden'));
     const target = document.getElementById(`sub-${subId}`);
     if(target) target.classList.remove('hidden');
@@ -544,11 +554,11 @@ function renderTimelineCalendar() {
 
                     <!-- Grid Background -->
                     <div class="timeline-grid-bg">
-                        ${dates.map(d => \`<div class="grid-line \${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>\`).join('')}
+                        ${dates.map(d => `<div class="grid-line ${[0,6].includes(d.getDay()) ? 'weekend' : ''}"></div>`).join('')}
                     </div>
 
                     <!-- Booking Bars (Live Data) -->
-                    \${roomBookings.map(b => {
+                    ${roomBookings.map(b => {
                         const bStart = new Date(b.checkInDate);
                         const bEnd = new Date(b.checkOutDate);
 
@@ -562,14 +572,14 @@ function renderTimelineCalendar() {
                         const leftPos = 240 + (dayDiff * 40);
                         const widthSize = (duration * 40) - 4;
 
-                        return \`
-                            <div class="booking-bar bar-blue" style="left: \${leftPos}px; width: \${widthSize}px;">
+                        return `
+                            <div class="booking-bar bar-blue" style="left: ${leftPos}px; width: ${widthSize}px;">
                                 <div class="bar-content">
                                     <span class="icon-user">👤</span>
-                                    <span>\${b.guestName}</span>
+                                    <span>${b.guestName}</span>
                                 </div>
                             </div>
-                        \`;
+                        `;
                     }).join('')}
                 </div>
             `;
