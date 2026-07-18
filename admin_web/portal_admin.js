@@ -395,7 +395,11 @@ window.openAddRoomModal = () => {
         </div>
 
         <div class="form-section-card">
-            <h3>Occupancy</h3>
+            <h3>Occupancy & Pricing</h3>
+            <div class="form-group">
+                <label>Rent per night (₹)</label>
+                <input type="number" id="field-room-price" class="form-input-text" value="2500">
+            </div>
             <div class="form-group">
                 <label>Maximum guests</label>
                 <input type="number" id="field-max-guests" class="form-input-text" value="2">
@@ -438,6 +442,7 @@ window.saveNewRoom = () => {
     const floor = document.getElementById('field-floor').value;
     const bedType = document.getElementById('field-bed-type').value;
     const bedCount = parseInt(document.getElementById('field-bed-count').value) || 1;
+    const price = parseFloat(document.getElementById('field-room-price').value) || 2500;
     const maxG = parseInt(document.getElementById('field-max-guests').value) || 1;
     const maxA = parseInt(document.getElementById('field-max-adults').value) || 1;
     const maxC = parseInt(document.getElementById('field-max-children').value) || 0;
@@ -455,6 +460,7 @@ window.saveNewRoom = () => {
         maxGuests: maxG,
         maxAdults: maxA,
         maxChildren: maxC,
+        roomPrice: price,
         numBathrooms: bathCount,
         isBathroomPrivate: isBathPrivate,
         hotelId: hotelId,
@@ -518,6 +524,7 @@ window.editRoom = (roomType) => {
     setTimeout(() => {
         if(document.getElementById('field-room-type')) document.getElementById('field-room-type').value = room.roomType;
         if(document.getElementById('field-room-count')) document.getElementById('field-room-count').value = room.totalUnits;
+        if(document.getElementById('field-room-price')) document.getElementById('field-room-price').value = room.roomPrice || 2500;
         if(document.getElementById('field-smoking')) document.getElementById('field-smoking').value = room.smokingPolicy;
         if(document.getElementById('field-floor')) document.getElementById('field-floor').value = room.floorLevel;
         if(document.getElementById('field-bed-type')) document.getElementById('field-bed-type').value = room.bedType;
