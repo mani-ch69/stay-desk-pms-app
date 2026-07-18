@@ -405,7 +405,7 @@ window.saveNewRoom = () => {
     const size = document.getElementById('field-room-size').value;
 
     const newRoom = {
-        roomNumber: roomType,
+        roomNumber: roomType, // Using Category Name as ID
         totalUnits: roomCount,
         hotelId: hotelId,
         qrToken: "QR-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
