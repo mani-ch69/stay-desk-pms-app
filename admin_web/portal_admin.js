@@ -493,8 +493,9 @@ function renderRoomDetails() {
                     <div class="stat-row">Number of this type: <b>${room.totalUnits}</b></div>
 
                     <div class="room-card-actions-v2">
-                        <button class="btn-edit-lite" onclick="alert('Edit mode synced')">Edit</button>
-                        <button class="btn-upload-blue" onclick="alert('Upload photos synced')">Upload photos</button>
+                        <button class="btn-edit-lite" onclick="editRoom('${room.roomType}')">Edit</button>
+                        <button class="btn-upload-blue" onclick="alert('Upload photos feature coming soon')">Upload photos</button>
+                        <button class="btn-edit-lite" style="color:red; border-color:red;" onclick="deleteRoom('${room.roomType}')">Delete</button>
                     </div>
                 </div>
             </div>
@@ -506,6 +507,44 @@ function renderRoomDetails() {
         </div>
     `;
 }
+
+window.editRoom = (roomType) => {
+    const room = allRooms.find(r => r.roomType === roomType);
+    if (!room) return;
+
+    window.openAddRoomModal();
+
+    // Wait a tiny bit for the HTML to be injected into the modal
+    setTimeout(() => {
+        if(document.getElementById('field-room-type')) document.getElementById('field-room-type').value = room.roomType;
+        if(document.getElementById('field-room-count')) document.getElementById('field-room-count').value = room.totalUnits;
+        if(document.getElementById('field-smoking')) document.getElementById('field-smoking').value = room.smokingPolicy;
+        if(document.getElementById('field-floor')) document.getElementById('field-floor').value = room.floorLevel;
+        if(document.getElementById('field-bed-type')) document.getElementById('field-bed-type').value = room.bedType;
+        if(document.getElementById('field-bed-count')) document.getElementById('field-bed-count').value = room.numberOfBeds;
+        if(document.getElementById('field-max-guests')) document.getElementById('field-max-guests').value = room.maxGuests;
+        if(document.getElementById('field-max-adults')) document.getElementById('field-max-adults').value = room.maxAdults;
+        if(document.getElementById('field-max-children')) document.getElementById('field-max-children').value = room.maxChildren;
+        if(document.getElementById('field-bath-count')) document.getElementById('field-bath-count').value = room.numBathrooms;
+
+        const radioYes = document.querySelector('input[name="bath-private"][value="yes"]');
+        const radioNo = document.querySelector('input[name="bath-private"][value="no"]');
+        if (room.isBathroomPrivate) { if(radioYes) radioYes.checked = true; }
+        else { if(radioNo) radioNo.checked = true; }
+
+        // Update the header
+        const header = document.querySelector('#add-room-modal h2');
+        if(header) header.innerText = "Edit Room Details";
+    }, 50);
+};
+
+window.deleteRoom = (roomType) => {
+    if (confirm(`Are you sure you want to delete the category '${roomType}'?`)) {
+        db.ref(`hotels/${hotelId}/rooms/${roomType}`).remove()
+            .then(() => alert("Category deleted successfully"))
+            .catch(e => alert("Error: " + e.message));
+    }
+};
 
 function renderTimelineCalendar() {
     const content = document.getElementById('pms-timeline-content');
