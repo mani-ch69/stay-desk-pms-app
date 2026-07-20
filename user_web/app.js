@@ -24,20 +24,21 @@ auth.signInAnonymously().catch(e => console.error("Auth Error:", e));
 
 // State
 const urlParams = new URLSearchParams(window.location.search);
-let hotelId = urlParams.get('hotel') || localStorage.getItem('hotel_id') || "GangaHomes_001";
+let hotelId = "GangaHomes_001"; // Hardcoded for 100% reliability
 
 // Persist for refresh
-if (urlParams.has('hotel')) localStorage.setItem('hotel_id', hotelId);
+localStorage.setItem('hotel_id', hotelId);
 
 let currentHotelData = null;
 let allRooms = [];
 let selectedRoomForBooking = null;
 
-// UI Elements
-const roomsGridEl = document.getElementById('rooms-grid');
+// UI Elements - Define inside a helper to ensure DOM is ready
+const getRoomsGrid = () => document.getElementById('rooms-grid');
 
 // --- INITIALIZATION ---
 function init() {
+    console.log("Stay Desk User Web Initializing...");
     syncBusinessDetails();
     syncRooms();
     syncRecentBookings();
@@ -87,31 +88,39 @@ function syncBusinessDetails() {
 }
 
 function syncRooms() {
-    console.log("Syncing Rooms for Hotel:", hotelId);
+    console.log("Syncing Rooms for:", hotelId);
     db.ref('hotels').child(hotelId).child('rooms').on('value', snap => {
         allRooms = [];
         if (snap.exists()) {
             snap.forEach(child => {
-                allRooms.push(child.val());
+                const roomData = child.val();
+                // CRUCIAL: If roomType is missing inside, use the database key (child.key)
+                if (!roomData.roomType) roomData.roomType = child.key;
+                if (!roomData.roomNumber) roomData.roomNumber = child.key;
+                allRooms.push(roomData);
             });
+            console.log("Rooms Loaded:", allRooms.length);
+        } else {
+            console.warn("No rooms found in database for this hotel ID.");
         }
         renderRooms();
     });
 }
 
 function renderRooms() {
+    const roomsGridEl = getRoomsGrid();
     if (!roomsGridEl) return;
     roomsGridEl.innerHTML = '';
 
     if (allRooms.length === 0) {
-        roomsGridEl.innerHTML = `<div style="text-align:center; padding:60px; color:var(--text-light); grid-column: 1/-1;">No rooms available at the moment.</div>`;
+        roomsGridEl.innerHTML = `<div style="text-align:center; padding:60px; color:#666; grid-column: 1/-1;">No rooms available at the moment.</div>`;
         return;
     }
 
     allRooms.forEach(room => {
-        const roomImg = room.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800';
+        const roomImg = room.imageUrl || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800';
         const price = room.roomPrice || room.price || '2,500';
-        const categoryName = room.roomType || room.roomNumber || "Deluxe Room";
+        const categoryName = room.roomType || room.roomNumber || "Standard Room";
 
         roomsGridEl.innerHTML += `
             <div class="room-card">
@@ -122,8 +131,8 @@ function renderRooms() {
                 <div class="room-info">
                     <h3>${categoryName}</h3>
                     <div class="room-stats">
-                        <span>👤 ${room.maxGuests || 2} Adults</span>
-                        <span>🛏️ ${room.bedType || 'King Size'}</span>
+                        <span>👤 ${room.maxGuests || room.maxAdults || 2} Adults</span>
+                        <span>🛏️ ${room.bedType || 'Comfort Bed'}</span>
                         <span>📏 ${room.roomSize || '250 sq.ft.'}</span>
                     </div>
                     <div class="room-icons">
