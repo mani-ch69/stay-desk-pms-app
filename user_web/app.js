@@ -215,4 +215,6 @@ document.getElementById('btn-confirm-booking').onclick = () => {
 };
 
 // Start
-init();
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+});
