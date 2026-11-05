@@ -2,27 +2,12 @@ package com.example.staydesk.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary Dark Theme Colors (Red-Orange-Yellow)
-val ThemeRed = Color(0xFFD32F2F)
-val ThemeOrange = Color(0xFFF57C00)
-val ThemeYellow = Color(0xFFFBC02D)
+val Purple80 = Color(0xD0E0FF)
+val PurpleGrey80 = Color(0xCCC2DC)
+val Pink80 = Color(0xEFB8C8)
 
-// Dark Theme Neutrals
-val DarkBackground = Color(0xFF121212)
-val DarkSurface = Color(0xFF1E1E1E)
-val DarkSurfaceVariant = Color(0xFF2C2C2C)
-val TextOnDark = Color(0xFFE0E0E0)
-val TextOnDarkMuted = Color(0xFFB0B0B0)
-
-// Legacy / Brand Colors (keeping for reference if needed elsewhere)
-val PrimaryBlue = Color(0xFF1976D2)
-val PrimaryDeepBlue = Color(0xFF1A237E)
-val AccentGold = Color(0xFFC5A059)
-val SuccessGreen = Color(0xFF2E7D32)
-
-// Light Theme Neutrals
-val BackgroundLight = Color(0xFFF8F9FA)
+val PrimaryBlue = Color(0xFF1E3A8A)
+val SecondaryBlue = Color(0xFF3B82F6)
+val AccentTeal = Color(0xFF0D9488)
+val BackgroundLight = Color(0xFFF8FAFC)
 val SurfaceWhite = Color(0xFFFFFFFF)
-val TextBlack = Color(0xFF000000)
-val TextGray = Color(0xFF757575)
-val BorderLight = Color(0xFFEEEEEE)

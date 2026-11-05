@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
+    <option name="selectedTabId" value="Firebase Crashlytics" />
     <option name="tabSettings">
       <map>
         <entry key="Firebase Crashlytics">
@@ -8,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="stay.desk.pms" />
-                  <option name="mobileSdkAppId" value="1:584834232463:android:a37b8b72de454113cbc0fa" />
-                  <option name="projectId" value="stay-desk-pms" />
-                  <option name="projectNumber" value="584834232463" />
+                  <option name="appId" value="Stay.deskpmsapp" />
+                  <option name="mobileSdkAppId" value="1:160367544031:android:898362f5eb2aa71ed30b6a" />
+                  <option name="projectId" value="stay-desk-pms-app" />
+                  <option name="projectNumber" value="160367544031" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -23,7 +23,7 @@ import com.example.staydesk.ui.waiter.*
 import com.example.staydesk.ui.profile.EditProfileScreen
 import com.example.staydesk.ui.settings.*
 import com.example.staydesk.ui.theme.StayDeskTheme
-import com.example.staydesk.util.SecurityManager
+import com.example.staydesk.utils.SecurityManager
 
 class AdminActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,14 +48,16 @@ fun AdminNavigation() {
 
     // Initialize session if already logged in
     LaunchedEffect(Unit) {
-        // ALWAYS INITIALIZE A SESSION FOR DEBUGGING
-        val debugHotelId = "GangaHomes_001" 
-        com.example.staydesk.data.HotelSession.setHotelId(debugHotelId)
+        val targetHotelId = "StayDesk_001"
+        
+        // FORCE the session to StayDesk_001
+        com.example.staydesk.data.HotelSession.setHotelId(targetHotelId)
         
         if (securityManager.isLoggedIn()) {
             val hId = securityManager.getHotelId()
-            if (hId != null) {
-                com.example.staydesk.data.HotelSession.setHotelId(hId)
+            // If the saved ID is the old one, update it to the new one in settings
+            if (hId == "GangaHomes_001") {
+                securityManager.updateHotelId(targetHotelId)
             }
         }
     }
@@ -98,8 +100,16 @@ fun AdminNavigation() {
         composable("splash") {
             SplashScreen(
                 onAnimationFinished = {
-                    // SKIP LOGIN FOR NOW
-                    navController.navigate("admin_menu") {
+                    val isFirebaseLoggedIn = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser != null
+                    val isSecLoggedIn = securityManager.isLoggedIn()
+                    
+                    val targetDestination = if (isFirebaseLoggedIn || isSecLoggedIn) {
+                        "admin_menu"
+                    } else {
+                        "login"
+                    }
+                    
+                    navController.navigate(targetDestination) {
                         popUpTo("splash") { inclusive = true }
                     }
                 }
@@ -306,6 +316,13 @@ fun AdminNavigation() {
                 staffPhoto = loggedPhoto,
                 onProfileClick = { navController.navigate("profile") },
                 onLogoutClick = {
+                    com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                    try {
+                        val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
+                            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+                        ).build()
+                        com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso).signOut()
+                    } catch (e: Exception) { /* ignore */ }
                     securityManager.logout()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
