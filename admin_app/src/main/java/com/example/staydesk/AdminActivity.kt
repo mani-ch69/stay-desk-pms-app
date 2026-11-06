@@ -25,6 +25,8 @@ import com.example.staydesk.ui.settings.*
 import com.example.staydesk.ui.theme.StayDeskTheme
 import com.example.staydesk.utils.SecurityManager
 
+import androidx.compose.ui.platform.LocalLifecycleOwner
+
 class AdminActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +91,30 @@ fun AdminNavigation() {
         return "${name[0]}***${name.last()}@$domain"
     }
 
+    // Auto-Lock on App Resume (Background to Foreground)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        var isFirstStart = true
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) {
+                isFirstStart = false
+            } else if (event == androidx.lifecycle.Lifecycle.Event.ON_START && !isFirstStart) {
+                if (securityManager.isLoggedIn() && securityManager.isLockEnabled()) {
+                    val currentRoute = navController.currentDestination?.route
+                    if (currentRoute != null && currentRoute != "unlock" && currentRoute != "login" && currentRoute != "splash") {
+                        navController.navigate("unlock") {
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     NavHost(
         navController = navController, 
         startDestination = "splash",
@@ -104,7 +130,7 @@ fun AdminNavigation() {
                     val isSecLoggedIn = securityManager.isLoggedIn()
                     
                     val targetDestination = if (isFirebaseLoggedIn || isSecLoggedIn) {
-                        "admin_menu"
+                        if (securityManager.isLockEnabled()) "unlock" else "admin_menu"
                     } else {
                         "login"
                     }

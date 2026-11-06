@@ -112,16 +112,6 @@ fun RoomManagementScreen(onBackClick: () -> Unit) {
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
             )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-                shape = CircleShape,
-                icon = { Icon(Icons.Default.Add, null) },
-                text = { Text("Add Room") }
-            )
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {

@@ -63,35 +63,46 @@ fun DashboardMetricCard(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(130.dp),
+        modifier = modifier.height(96.dp),
         shape = RoundedCornerShape(12.dp),
         color = Color.White,
         shadowElevation = 2.dp
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(10.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Surface(
-                modifier = Modifier.size(36.dp),
-                shape = CircleShape,
-                color = iconColor.copy(alpha = 0.1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(icon, null, tint = iconColor, modifier = Modifier.size(20.dp))
+                Text(
+                    text = title, 
+                    fontSize = 11.sp, 
+                    color = Color.Gray, 
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Surface(
+                    modifier = Modifier.size(28.dp),
+                    shape = CircleShape,
+                    color = iconColor.copy(alpha = 0.1f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(icon, null, tint = iconColor, modifier = Modifier.size(16.dp))
+                    }
                 }
             }
             
-            Column {
-                Text(title, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
-                Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-            }
-            
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("View Details", fontSize = 11.sp, color = iconColor, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.width(4.dp))
-                Icon(Icons.Default.ChevronRight, null, tint = iconColor, modifier = Modifier.size(12.dp))
-            }
+            Text(
+                text = value, 
+                fontSize = 20.sp, 
+                fontWeight = FontWeight.ExtraBold, 
+                color = Color.Black
+            )
         }
     }
 }
@@ -180,61 +191,162 @@ fun RecentBookingItem(
     roomType: String,
     onClick: () -> Unit
 ) {
-    val sdfDate = remember { SimpleDateFormat("dd MMM", Locale.getDefault()) }
-    val sdfTime = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+    val dfDate = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
+    val dfDateTime24 = remember { SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault()) }
 
-    Surface(
+    val nights = remember(booking.checkInDate, booking.checkOutDate) {
+        val diff = ((booking.checkOutDate - booking.checkInDate) / 86400000L).toInt()
+        if (diff <= 0) 1 else diff
+    }
+
+    val perNightRate = booking.roomRent
+    val calculatedTotal = (perNightRate * nights * booking.roomQuantity) - booking.discount
+    val totalAmount = if (booking.totalAmount > 0) booking.totalAmount else calculatedTotal
+
+    Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFF8FAFC),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(36.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFE8EFFF)
+            // Header Row: Booking #, Booked Date, Status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Event, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    ) {
+                        Text(
+                            text = "BK# ${booking.bookingNumber.ifBlank { "BK1001" }}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Booked: ${dfDate.format(Date(booking.timestamp))}",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFFE8F5E9)
+                ) {
+                    Text(
+                        text = booking.status.name,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2E7D32),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
                 }
             }
-            
-            Spacer(Modifier.width(12.dp))
-            
-            Column(modifier = Modifier.weight(1.2f)) {
-                Text(booking.bookingNumber, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(booking.guestName, fontSize = 12.sp, color = Color.Gray, maxLines = 1)
-                Text(booking.guestPhone, fontSize = 11.sp, color = Color.Gray)
-            }
-            
-            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                Text(booking.roomNumber, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(roomType, fontSize = 11.sp, color = Color.Gray, maxLines = 1)
-            }
-            
-            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                Text(sdfDate.format(Date(booking.checkInDate)), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(sdfTime.format(Date(booking.checkInDate)), fontSize = 11.sp, color = Color.Gray)
-            }
-            
-            Spacer(Modifier.width(8.dp))
-            
-            Box(
-                modifier = Modifier
-                    .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray.copy(alpha = 0.5f))
+
+            // Guest Name & Mobile + Room Type & Adults
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(booking.status.name, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = booking.guestName.ifBlank { "Guest" },
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = Color.Black
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Phone, null, modifier = Modifier.size(12.dp), tint = Color.Gray)
+                        Spacer(Modifier.width(4.dp))
+                        Text(text = booking.guestPhone.ifBlank { "N/A" }, fontSize = 12.sp, color = Color.Gray)
+                    }
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = roomType.ifBlank { "Room ${booking.roomNumber}" },
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Room ${booking.roomNumber} • ${booking.numberOfGuests} Adults",
+                        fontSize = 11.sp,
+                        color = Color.DarkGray
+                    )
+                }
             }
-            
-            Icon(Icons.Default.ChevronRight, null, tint = Color.LightGray, modifier = Modifier.size(16.dp))
+
+            // Check-in, Check-out & Nights
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFF8FAFC),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Check-in", fontSize = 10.sp, color = Color.Gray)
+                        Text(dfDateTime24.format(Date(booking.checkInDate)), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                    }
+
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ) {
+                        Text(
+                            text = "$nights Night${if(nights > 1) "s" else ""}",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("Check-out", fontSize = 10.sp, color = Color.Gray)
+                        Text(dfDateTime24.format(Date(booking.checkOutDate)), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF57C00))
+                    }
+                }
+            }
+
+            // Per Night Rate & Total Amount
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Rate: ", fontSize = 12.sp, color = Color.Gray)
+                    Text("₹ ${perNightRate.toInt()} / night", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Total: ", fontSize = 12.sp, color = Color.Gray)
+                    Text("₹ ${totalAmount.toInt()}", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFF1976D2))
+                }
+            }
         }
     }
 }

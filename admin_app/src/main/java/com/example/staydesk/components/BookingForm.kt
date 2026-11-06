@@ -49,7 +49,7 @@ fun AddBookingDialog(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(if (initialBooking == null) "New Manual Reservation" else "Edit Reservation", fontWeight = FontWeight.Bold) },
+                    title = { Text(if (initialBooking == null) "New Booking" else "Edit Booking", fontWeight = FontWeight.Bold) },
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
                     actions = {
                         if (initialBooking != null && onDeleteClick != null) {
@@ -65,11 +65,14 @@ fun AddBookingDialog(
                         onClick = {
                             scope.launch {
                                 isSaving = true
-                                delay(800)
-                                // Final validation and number generation if new
+                                val bId = if (initialBooking == null || initialBooking.id.isBlank()) UUID.randomUUID().toString() else initialBooking.id
+                                val bNum = if (initialBooking == null || initialBooking.bookingNumber.isBlank()) (1000000000L..9999999999L).random().toString() else initialBooking.bookingNumber
+                                val rNum = if (currentBookingData.roomNumber.isBlank()) currentBookingData.roomType.ifBlank { "101" } else currentBookingData.roomNumber
+
                                 val finalBooking = currentBookingData.copy(
-                                    id = initialBooking?.id ?: UUID.randomUUID().toString(),
-                                    bookingNumber = if (initialBooking == null) (1000000000L..9999999999L).random().toString() else initialBooking.bookingNumber
+                                    id = bId,
+                                    bookingNumber = bNum,
+                                    roomNumber = rNum
                                 )
                                 onConfirm(finalBooking)
                                 isSaving = false
@@ -79,7 +82,7 @@ fun AddBookingDialog(
                         modifier = Modifier.fillMaxWidth().height(54.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
-                        enabled = !isSaving && currentBookingData.guestName.isNotBlank() && currentBookingData.guestPhone.isNotBlank() && currentBookingData.roomNumber.isNotBlank()
+                        enabled = !isSaving && currentBookingData.guestName.isNotBlank() && currentBookingData.guestPhone.isNotBlank()
                     ) {
                         if (isSaving) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                         else Text("Save Reservation", fontWeight = FontWeight.Bold, fontSize = 16.sp)

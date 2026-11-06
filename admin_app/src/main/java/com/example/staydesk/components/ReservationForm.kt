@@ -65,6 +65,20 @@ fun ReservationFormContent(
     var checkInDate by remember { mutableLongStateOf(initialBooking?.checkInDate ?: DateRangeUtils.getNoonTimestamp(System.currentTimeMillis())) }
     var checkOutDate by remember { mutableLongStateOf(initialBooking?.checkOutDate ?: (DateRangeUtils.getNoonTimestamp(System.currentTimeMillis()) + 86400000L)) }
     
+    var checkInTimeStr by remember(initialBooking, checkInDate) {
+        val cal = Calendar.getInstance().apply { timeInMillis = checkInDate }
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val min = cal.get(Calendar.MINUTE)
+        mutableStateOf(String.format(Locale.getDefault(), "%02d:%02d", hour, min))
+    }
+    
+    var checkOutTimeStr by remember(initialBooking, checkOutDate) {
+        val cal = Calendar.getInstance().apply { timeInMillis = checkOutDate }
+        val hour = cal.get(Calendar.HOUR_OF_DAY)
+        val min = cal.get(Calendar.MINUTE)
+        mutableStateOf(String.format(Locale.getDefault(), "%02d:%02d", hour, min))
+    }
+    
     // --- AVAILABILITY LOGIC ---
     val availabilityMap = remember(checkInDate, checkOutDate, allBookings, rooms, initialBooking) {
         val map = mutableMapOf<String, Int>()
@@ -140,7 +154,8 @@ fun ReservationFormContent(
             b.checkInDate < checkOutDate && b.checkOutDate > checkInDate
         }.map { it.roomNumber }
         
-        val assignedRoom = rooms.find { it.roomType == selectedType && it.roomNumber !in bookedRoomNumbers }?.roomNumber ?: ""
+        val assignedRoom = rooms.find { it.roomType == selectedType && it.roomNumber !in bookedRoomNumbers }?.roomNumber
+            ?: selectedType.ifBlank { "101" }
 
         onDataChanged(Booking(
             id = initialBooking?.id ?: "",
@@ -219,7 +234,67 @@ fun ReservationFormContent(
                     DateDisplayBox("Check-in *", df.format(Date(checkInDate)), { showRangePicker = true }, Modifier.weight(1f))
                     DateDisplayBox("Check-out *", df.format(Date(checkOutDate)), { showRangePicker = true }, Modifier.weight(1f))
                 }
-                Box(Modifier.background(Color(0xFFF1F5F9), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) { Text("$nights Nights", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+
+                // 24-Hour Format Times Row (Right below Check-in and Check-out dates)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = checkInTimeStr,
+                        onValueChange = { newTime ->
+                            if (newTime.length <= 5) {
+                                checkInTimeStr = newTime
+                                val parts = newTime.split(":")
+                                if (parts.size == 2) {
+                                    val h = parts[0].toIntOrNull()
+                                    val m = parts[1].toIntOrNull()
+                                    if (h != null && m != null && h in 0..23 && m in 0..59) {
+                                        val cal = Calendar.getInstance().apply {
+                                            timeInMillis = checkInDate
+                                            set(Calendar.HOUR_OF_DAY, h)
+                                            set(Calendar.MINUTE, m)
+                                        }
+                                        checkInDate = cal.timeInMillis
+                                    }
+                                }
+                            }
+                        },
+                        label = { Text("Check-in Time (24h)", fontSize = 11.sp) },
+                        placeholder = { Text("14:00", fontSize = 12.sp) },
+                        leadingIcon = { Icon(Icons.Default.AccessTime, null, modifier = Modifier.size(16.dp), tint = Color(0xFF1976D2)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = checkOutTimeStr,
+                        onValueChange = { newTime ->
+                            if (newTime.length <= 5) {
+                                checkOutTimeStr = newTime
+                                val parts = newTime.split(":")
+                                if (parts.size == 2) {
+                                    val h = parts[0].toIntOrNull()
+                                    val m = parts[1].toIntOrNull()
+                                    if (h != null && m != null && h in 0..23 && m in 0..59) {
+                                        val cal = Calendar.getInstance().apply {
+                                            timeInMillis = checkOutDate
+                                            set(Calendar.HOUR_OF_DAY, h)
+                                            set(Calendar.MINUTE, m)
+                                        }
+                                        checkOutDate = cal.timeInMillis
+                                    }
+                                }
+                            }
+                        },
+                        label = { Text("Check-out Time (24h)", fontSize = 11.sp) },
+                        placeholder = { Text("11:00", fontSize = 12.sp) },
+                        leadingIcon = { Icon(Icons.Default.AccessTime, null, modifier = Modifier.size(16.dp), tint = Color(0xFFF57C00)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        singleLine = true
+                    )
+                }
                 
                 // Room Type Dropdown with Availability
                 var dropExpanded by remember { mutableStateOf(false) }

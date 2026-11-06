@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,19 +59,38 @@ fun CommonDateRangePicker(
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = {
-                onConfirm(state.selectedStartDateMillis, state.selectedEndDateMillis)
-                onDismiss()
-            }) { Text("OK") }
+            Button(
+                onClick = {
+                    onConfirm(state.selectedStartDateMillis, state.selectedEndDateMillis)
+                    onDismiss()
+                },
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+            ) {
+                Text("Apply Filter", fontWeight = FontWeight.Bold)
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                Text("Cancel")
+            }
+        },
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp)
     ) {
         DateRangePicker(
             state = state,
-            modifier = Modifier.weight(1f).padding(16.dp),
-            title = { Text("Select Stay Dates", modifier = Modifier.padding(16.dp)) }
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            title = {
+                Text(
+                    text = "Select Date Range", 
+                    modifier = Modifier.padding(start = 20.dp, top = 16.dp, end = 20.dp),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
         )
     }
 }

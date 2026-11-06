@@ -1,27 +1,17 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
-    <!-- Background Circle -->
+    <!-- White Circle Background Badge -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
+        android:pathData="M12,3 C7.03,3 3,7.03 3,12 C3,16.97 7.03,21 12,21 C16.97,21 21,16.97 21,12 C21,7.03 16.97,3 12,3 Z" />
 
-    <!-- Main Building/Hotel Icon (Blue) -->
+    <!-- Exact Material Business Building Logo (Same as login screen inside app) -->
     <path
         android:fillColor="#0052FF"
-        android:pathData="M34,74 L34,44 L54,34 L74,44 L74,74 L64,74 L64,54 L44,54 L44,74 Z" />
-
-    <!-- Roof Detail -->
-    <path
-        android:fillColor="#0039CC"
-        android:pathData="M34,44 L54,34 L74,44 L54,39 Z" />
-
-    <!-- Window/Stay Desk Indicator -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M50,46 L58,46 L58,50 L50,50 Z" />
+        android:pathData="M12,7 V3 H2 v18 h20 V7 H12 z M6,19 H4 v-2 h2 V19 z M6,15 H4 v-2 h2 V15 z M6,11 H4 V9 h2 V11 z M6,7 H4 V5 h2 V7 z M10,19 H8 v-2 h2 V19 z M10,15 H8 v-2 h2 V15 z M10,11 H8 V9 h2 V11 z M10,7 H8 V5 h2 V7 z M20,19 h-8 v-2 h2 v-2 h-2 v-2 h2 v-2 h-2 V9 h8 V19 z M18,11 h-2 v2 h2 V11 z M18,15 h-2 v2 h2 V15 z" />
 
 </vector>

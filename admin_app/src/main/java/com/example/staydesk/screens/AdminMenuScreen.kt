@@ -1,5 +1,6 @@
 package com.example.staydesk.ui.waiter
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -98,12 +100,11 @@ fun AdminMenuScreen(
                     }
                 },
                 navigationIcon = {
-                    // Hamburger icon removed
+                    IconButton(onClick = { selectedBottomTab = "settings"; moreTabSubScreen = "main" }) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.Black)
+                    }
                 },
                 actions = {
-                    IconButton(onClick = { selectedBottomTab = "settings"; moreTabSubScreen = "main" }) { 
-                        Icon(Icons.Default.AccountCircle, null, tint = Color.Black) 
-                    }
                     IconButton(onClick = { /* Notifications */ }) { Icon(Icons.Default.Notifications, null, tint = Color.Black) }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -124,10 +125,10 @@ fun AdminMenuScreen(
                 )
                 
                 NavigationBarItem(
-                    selected = selectedBottomTab == "calendar", 
-                    onClick = { selectedBottomTab = "calendar" }, 
-                    icon = { Icon(Icons.Default.CalendarMonth, null) }, 
-                    label = { Text("Calendar", fontSize = 10.sp) },
+                    selected = selectedBottomTab == "reservations", 
+                    onClick = { selectedBottomTab = "reservations" }, 
+                    icon = { Icon(Icons.Default.BookOnline, null) }, 
+                    label = { Text("Bookings", fontSize = 10.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -142,7 +143,7 @@ fun AdminMenuScreen(
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
-                                .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                                .background(Color(0xFF64748B), shape = CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -158,7 +159,7 @@ fun AdminMenuScreen(
                             text = "New Booking", 
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = Color(0xFF475569)
                         ) 
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -167,10 +168,10 @@ fun AdminMenuScreen(
                 )
 
                 NavigationBarItem(
-                    selected = selectedBottomTab == "rooms", 
-                    onClick = { selectedBottomTab = "rooms" }, 
-                    icon = { Icon(Icons.Default.Bed, null) }, 
-                    label = { Text("Rooms", fontSize = 10.sp) },
+                    selected = selectedBottomTab == "calendar", 
+                    onClick = { selectedBottomTab = "calendar" }, 
+                    icon = { Icon(Icons.Default.CalendarMonth, null) }, 
+                    label = { Text("Calendar", fontSize = 10.sp) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -210,7 +211,9 @@ fun AdminMenuScreen(
                     when (moreTabSubScreen) {
                         "main" -> AdminMoreContent(
                             staffName = staffName, staffIdLabel = staffIdLabel, staffPhoto = staffPhoto,
-                            onHotelStaysClick = { moreTabSubScreen = "hotel_stays" },
+                            onBookingsClick = { moreTabSubScreen = "hotel_bookings" },
+                            onRatesClick = { moreTabSubScreen = "hotel_rates_menu" },
+                            onPropertyClick = { moreTabSubScreen = "hotel_property_detail" },
                             onSettingsClick = { moreTabSubScreen = "settings_details" },
                             onLogoutClick = onLogoutClick
                         )
@@ -275,7 +278,9 @@ fun AdminMoreContent(
     staffName: String, 
     staffIdLabel: String, 
     staffPhoto: String?, 
-    onHotelStaysClick: () -> Unit, 
+    onBookingsClick: () -> Unit,
+    onRatesClick: () -> Unit,
+    onPropertyClick: () -> Unit,
     onSettingsClick: () -> Unit, 
     onLogoutClick: () -> Unit
 ) {
@@ -362,7 +367,9 @@ fun AdminMoreContent(
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Column {
-                MoreMenuItem("Hotel & Stay's", Icons.Default.Hotel, onHotelStaysClick)
+                MoreMenuItem("Reservations", Icons.Default.BookOnline, onBookingsClick)
+                MoreMenuItem("Rates & Availability", Icons.Default.EventAvailable, onRatesClick)
+                MoreMenuItem("Property Detail", Icons.Default.Business, onPropertyClick)
                 MoreMenuItem("Settings", Icons.Default.Settings, onSettingsClick)
             }
         }

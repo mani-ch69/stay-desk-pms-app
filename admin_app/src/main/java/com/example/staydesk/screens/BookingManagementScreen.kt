@@ -31,17 +31,23 @@ fun BookingManagementScreen(
     onDeleteBooking: (String) -> Unit
 ) {
     val startOfToday = remember { Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis }
-    val endOfToday = remember { Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999) }.timeInMillis }
+    val endOf30Days = remember(startOfToday) { 
+        Calendar.getInstance().apply { 
+            timeInMillis = startOfToday
+            add(Calendar.DAY_OF_MONTH, 30)
+            set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999) 
+        }.timeInMillis 
+    }
 
     var activeDateOfType by remember { mutableStateOf("Check-in") }
     var activeDateFrom by remember { mutableLongStateOf(startOfToday) }
-    var activeDateTo by remember { mutableLongStateOf(endOfToday) }
+    var activeDateTo by remember { mutableLongStateOf(endOf30Days) }
     var activeSearchQuery by remember { mutableStateOf("") }
     val activeStatuses = remember { mutableStateListOf<String>() }
 
     var draftDateOfType by remember { mutableStateOf("Check-in") }
     var draftDateFrom by remember { mutableLongStateOf(startOfToday) }
-    var draftDateTo by remember { mutableLongStateOf(endOfToday) }
+    var draftDateTo by remember { mutableLongStateOf(endOf30Days) }
     var draftSearchQuery by remember { mutableStateOf("") }
     val draftStatuses = remember { mutableStateListOf<String>() }
 
@@ -96,17 +102,30 @@ fun BookingManagementScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier.weight(1f)) {
+                    Box(modifier = Modifier.width(125.dp)) {
                         FilterDropdownFieldCompact("Date of", draftDateOfType) { draftDateOfType = it }
                     }
                     Surface(
-                        modifier = Modifier.weight(1.5f).height(48.dp).clickable { showRangePicker = true }.border(1.dp, Color.LightGray, RoundedCornerShape(8.dp)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clickable { showRangePicker = true }
+                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("${sdf.format(Date(draftDateFrom))} - ${sdf.format(Date(draftDateTo))}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Icon(Icons.Default.DateRange, null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${sdf.format(Date(draftDateFrom))} - ${sdf.format(Date(draftDateTo))}", 
+                                fontSize = 13.sp, 
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Icon(Icons.Default.DateRange, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
@@ -224,11 +243,43 @@ fun BookingManagementScreen(
 @Composable
 fun FilterDropdownFieldCompact(label: String, selected: String, onSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(value = selected, onValueChange = {}, readOnly = true, label = { Text(label, fontSize = 11.sp) }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }, modifier = Modifier.menuAnchor().fillMaxWidth(), shape = RoundedCornerShape(8.dp), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = Color.LightGray, unfocusedContainerColor = Color.White))
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            listOf("Reservation", "Check-in", "Check-out", "Stay").forEach { option ->
-                DropdownMenuItem(text = { Text(option, fontSize = 13.sp) }, onClick = { onSelect(option); expanded = false })
+    ExposedDropdownMenuBox(
+        expanded = expanded, 
+        onExpandedChange = { expanded = !expanded }, 
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Surface(
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+                .height(48.dp)
+                .clickable { expanded = !expanded }
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+            color = Color.White,
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(verticalArrangement = Arrangement.Center) {
+                    Text(label, fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(selected, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            }
+        }
+
+        ExposedDropdownMenu(
+            expanded = expanded, 
+            onDismissRequest = { expanded = false }
+        ) {
+            listOf("Check-in", "Check-out", "Reservation", "Stay").forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option, fontSize = 13.sp, fontWeight = FontWeight.Medium) }, 
+                    onClick = { onSelect(option); expanded = false }
+                )
             }
         }
     }

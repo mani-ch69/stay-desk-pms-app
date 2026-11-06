@@ -115,15 +115,22 @@ fun CalendarManagementScreen(
                                     val isToday = isSameDay(cal, Calendar.getInstance())
                                     val isWeekend = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
                                     
+                                    val calDayStart = startOfDay(cal.timeInMillis)
                                     val statusDots = mutableListOf<Color>()
-                                    val dayBookings = bookings.filter { b ->
-                                        val checkIn = startOfDay(b.checkInDate)
-                                        val checkOut = startOfDay(b.checkOutDate)
-                                        cal.timeInMillis in checkIn..checkOut
+                                    
+                                    val hasCheckIn = bookings.any { b ->
+                                        b.status != BookingStatus.CANCELLED && isSameDay(Calendar.getInstance().apply { timeInMillis = b.checkInDate }, cal)
                                     }
-                                    if (dayBookings.any { isSameDay(Calendar.getInstance().apply { timeInMillis = it.checkInDate }, cal) }) statusDots.add(Color(0xFF4CAF50))
-                                    if (dayBookings.any { cal.timeInMillis > startOfDay(it.checkInDate) && cal.timeInMillis < startOfDay(it.checkOutDate) }) statusDots.add(Color(0xFF0052FF))
-                                    if (dayBookings.any { isSameDay(Calendar.getInstance().apply { timeInMillis = it.checkOutDate }, cal) }) statusDots.add(Color(0xFFF57C00))
+                                    val hasOccupied = bookings.any { b ->
+                                        b.status != BookingStatus.CANCELLED && calDayStart > startOfDay(b.checkInDate) && calDayStart < startOfDay(b.checkOutDate)
+                                    }
+                                    val hasCheckOut = bookings.any { b ->
+                                        b.status != BookingStatus.CANCELLED && isSameDay(Calendar.getInstance().apply { timeInMillis = b.checkOutDate }, cal)
+                                    }
+
+                                    if (hasCheckIn) statusDots.add(Color(0xFF4CAF50))  // Green Dot for Check-in
+                                    if (hasOccupied) statusDots.add(Color(0xFF0052FF)) // Blue Dot for Occupied
+                                    if (hasCheckOut) statusDots.add(Color(0xFFF57C00)) // Orange Dot for Check-out
 
                                     CalendarDayCell(
                                         day = cal.get(Calendar.DAY_OF_MONTH),
